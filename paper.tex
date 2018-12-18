@@ -1,0 +1,257 @@
+\documentclass[11pt]{article}
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsthm,amsmath,amsfonts,amssymb,amstext,mathtools}
+\usepackage{fullpage}
+\usepackage{macros}
+
+
+
+\begin{document}
+
+\title{An Air Drop That Preserves Recipient Privacy}
+\author{Dan Boneh \and Riad Wahby}
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+
+More to come.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Private air drop: definitions}
+
+
+A private air drop (PAD) system is a triple of efficient algorithms:
+\begin{itemize}
+\item $\text{sendTokens}(\PK) \to (c, s)$:
+Generates a token $c$ to be posted on the blockchain,
+and a secret $s$ given to the recipient via a private channel
+(e.g., by posting an encryption of $s$ encrypted under $\PK$ 
+to the blockchain). 
+
+\item $\text{sign}(\SK, (c, s), m) \to \text{sig}$:
+Signs a message $m$ indicating that the token $c$ is spent.
+
+\item $\text{verify}(c, m, \text{sig}) \to \{\text{yes},\text{no}\}:$
+Verifier that a signature $\text{sig}$ on token $c$ is valid.
+\end{itemize}
+
+Informal security properties: 
+(1) $c$ and $\text{sig}$ should reveal nothing about $\PK$,
+(2) without $\SK$: existential unforgeability under a 
+(one-time) chosen message attack.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{A private air drop to RSA public keys}
+
+From here we use the following notations:
+$\range{\ell}$ denotes the set $\{0,1,\ldots,\ell-1\}$ and 
+$\textsf{Primes}(\lambda)$ is a set of size $2^\lambda$ 
+containing the smallest $2^\lambda$ odd primes. 
+
+We will also need a set of public parameters that include the description
+of a cyclic group $\GG$ of unknown order.  We let $g$ and $h$ be two
+random generators of $\GG$ where the discrete-log of $g$ base $h$ is unknown. 
+We assume that an upper bound $G$ on $\abs{\GG}$ is known. 
+
+\noindent
+With this setup, the private air drop system works as follows:
+
+\paragraph{Algorithm $\text{sendTokens}(\PK)$:}
+To send tokens to an RSA public key $\PK = (n, e)$ do:
+\begin{itemize}
+\item 
+generate a random $s \rgets \range{G}$.
+
+\item 
+output $(c, s)$ where $c \gets g^n \cdot h^s \in \GG$.
+\end{itemize}
+
+\medskip\noindent 
+The following two notes can help optimize the scheme:
+\begin{itemize}
+\item[$-$] $s$ is privately sent to the owner of $\PK$, for example
+by encrypting $s$ under $\PK$ to obtain a ciphertext $c'$ and
+publishing this $c'$ somewhere, not necessarily on the blockchain.  There is
+a public association between $c'$ and $\PK$ (e.g., via a hash table),
+so that the owner of $\PK$ can easily find $c'$.  One can include
+$H(c)$ in the plaintext encrypted in $c'$ to help the owner of $\PK$
+quickly find $c$.  
+
+\item[$-$] One can generate $s$ 
+as $s \gets H(s')$ where $s'$ is a random 256-bit value and $H$ is a hash
+function $H:\{0,1\}^{256} \to \range{G}$.  The ciphertext $c'$ is
+an encryption of $s'$, instead of $s$, which can shrink~$c'$.
+\end{itemize}
+
+
+\paragraph{Algorithm $\text{sign}(\SK, (c, s), m)$:}  
+To withdraw the funds associated with the token $c$ the user
+signs a withdrawl message $m$ using the RSA secret key $\SK = (n,p,q)$ 
+as follows:
+\begin{itemize}
+\item Find a prime $2 \leq t \leq 1000$  such that $t$ is a quadratic 
+residue in $\ZZ_n$. 
+
+\item The user proves possession of $\SK$ by proving knowledge of 
+$w \deq \sqrt{t} \in \ZZ_n$ without revealing $w$ or $n$. 
+The user does so as follows:
+\begin{enumerate}
+\item find integers $(w,a)$ such that $w^2 = t + a n$ in $\ZZ$
+           (i.e. $w$ is a square root of $t$ modulo $n$)
+
+\item choose a random $G$-bit integer $s_1$ and compute
+           $c_1 \gets g^w \cdot h^{s_1} \in \GG$.
+
+\item with $(c_1, t)$ public, the computed signature is a
+  signature of knowledge of seven integers 
+%$(n, w, a, s, s_1)$ where
+%\begin{align*}
+%  c & = g^n h^s         \quad\in \GG,  \\
+%  c_1 & = g^w h^{s_1}      \quad\in \GG,   \\
+%  w^2 & = t + a \cdot n  \quad\in \ZZ.
+%\end{align*}
+%The ZKPK works by proving knowledge of integers
+   $\textit{witness} = (w, \textit{w2}, s_1, a, \textit{an}, \textit{s1w}, \textit{sa}) \in \ZZ^7$
+satisfying:
+\begin{align} \label{eq:proofeq}
+\begin{split}
+     c_1 & = g^w h^{\textit{s1}} \\
+     g^{\textit{w2}} h^{\textit{s1w}} & = c_1^w \\
+     g^{\textit{an}} \cdot h^{\textit{sa}} & = c^a \\
+     \textit{w2} & = t + \textit{an}
+\end{split}
+\end{align}
+\end{enumerate}
+\end{itemize}
+If~\eqref{eq:proofeq} holds then $w2 = w^2$ and $\mathit{an} = a \cdot n$
+in $\ZZ$.
+The last equation in~\eqref{eq:proofeq} 
+ensures that $w^2 = t + a \cdot n$ in $\ZZ$,
+as required. 
+
+To implement the ZKPK for~\eqref{eq:proofeq} let us define a 
+homomorphism $\phi:\ZZ^7 \to \GG^3 \times \ZZ$ as follows:
+\[ 
+  \phi(w, \textit{w2}, s_1, a, \textit{an}, \textit{s1w}, \textit{sa}) \deq
+      \Big(\ 
+       g^w \cdot h^{\textit{s1}},\ \ \ 
+       g^{\textit{w2}} \cdot h^{\textit{s1w}} / c_1^w,\ \ \ 
+       g^{\textit{an}} \cdot h^{\textit{sa}} / c^a,\ \ \ 
+       \textit{w2} - \textit{an}\ \Big)
+\]
+Then we need a ZKPK for a vector $v \in \ZZ^7$
+such that $\phi(v) = (c_1, 1, 1, t) \in \GG^3 \times \ZZ$. 
+We to so using a zero-knowledge protocol from~\cite[\S 3.5]{ourpaper} 
+and convert it
+into a signature scheme using Fiat-Shamir.  
+The resulting signature scheme works as follows:
+\begin{itemize}
+\item choose seven random integers
+            $r_w, r_\textit{w2}, r_\textit{s1}, r_a, r_\textit{an}, r_\textit{s1w}, r_\textit{sa} \rgets \range{B}$ and compute
+\[ (A,B,C,D) \gets \phi(r_w, r_\textit{w2}, r_\textit{s1}, r_a, r_\textit{an}, r_\textit{s1w}, r_\textit{sa}) \in \GG^3 \times \ZZ. \]
+The range $\range{B}$ needs to be chosen so that the
+random values are sufficiently big to ensure that the vector $z \in \ZZ^7$ below
+is statistically independent of the vector $\textit{witness} \in \ZZ^7$. 
+
+
+\item compute
+            $\textit{PRNGKey} = \text{Hash}(m, G, g, h, c, c_1, t, A, B, C, D)$.
+Use a PRNG seeded with $\textit{PRNGKey}$ to generate a random
+  128-bit $\textit{chal}$ and a random 128-bit prime $\ell$.
+
+
+\item compute the integer vector
+   \[  z \gets \textit{chal} \cdot (w, \textit{w2}, \textit{s1}, a, \textit{an}, \textit{s1w}, \textit{sa}) +
+                   (r_w, r_\textit{w2}, r_\textit{s1}, r_a, r_\textit{an}, r_\textit{s1w}, r_\textit{sa})  \in \ZZ^7  \]
+Let $z \gets (z_w, z_\textit{w2}, z_\textit{s1}, z_a, z_\textit{an}, z_\textit{s1w}, z_\textit{sa})$
+and $z' \gets (z \bmod \ell) \in \ZZ^7$.
+
+\item compute 
+\[  (A_q, B_q, C_q, D_q) \gets \phi\Big(
+        \lfloor z_w / \ell \rfloor, 
+        \lfloor z_\textit{w2} / \ell \rfloor, 
+        \lfloor z_\textit{s1} / \ell \rfloor, 
+        \lfloor z_a / \ell \rfloor, 
+        \lfloor z_\textit{an} / \ell \rfloor, 
+        \lfloor z_\textit{s1w} / \ell \rfloor, 
+        \lfloor z_\textit{sa} / \ell \rfloor \Big) \in \GG^3 \times \ZZ. \]
+
+\item output the signature 
+$\text{sig} = (c_1, t, \textit{chal}, \ell, A_q, B_q, C_q, D_q, z')$.
+\end{itemize}
+
+
+
+\paragraph{Algorithm $\text{verify}(c, m, \text{sig}):$}
+Verify that $\text{sig}$ is a valid signature for
+token $c$ on the message $m$.
+\begin{itemize}
+\item compute $(A_\ell, B_\ell, C_\ell, D_\ell) \gets \phi(z') \in \GG^3 \times \ZZ$.
+\item compute 
+\begin{align*}
+     A & \gets A_q^\ell \cdot A_\ell  / c_1^{\textit{chal}} \\
+     B & \gets B_q^\ell \cdot B_\ell  \\
+     C & \gets C_q^\ell \cdot C_\ell  \\
+     D & \gets D_q \cdot \ell + D_\ell - (t \cdot \textit{chal}) \\
+     \textit{PRNGkey} & \gets \text{Hash}(m, G, g, h, c, c_1, t, A, B, C, D)
+\end{align*}
+
+\item use a PRNG seeded with $\textit{PRNGkey}$ to generate $\text{chal}'$ and
+  $\ell'$ as described in the sign algorithm. Since $\ell$ is
+  included in the signature, the verifier does not need to search for
+  a prime, but can instead verify that the given $\ell$ is prime and
+  is not too far from the base starting point of the prime search.
+
+\item accept iff $\text{chal}' = \text{chal}$ and $\ell' = \ell$.
+\end{itemize}
+
+
+
+\paragraph{Comments.}
+There is a seemingly simpler method to prove that one knows the
+factorization of $n$, namely, prove that one knows $p$ such that $p$
+divides $n$.  That is, instead of committing to $w$ we would commit to
+$p$ and then prove that the committed value divides $n$. But we would
+also need to prove that the committed factor is not one of 
+$\{1, -1, n, -n\}$, and that will result in a longer proof.
+
+This scheme is only secure is a group where there are no known
+elements of low order.  The group $\ZZ/n$ is not such a group because
+of the element $-1$ of order $2$.  To eliminate this element we work
+in the quotient group $(\ZZ/n)/\{\pm 1\}$, representing elements as
+$\abs{x} = \min(x, n - x)$.  In this group $-1$ is the same as $1$,
+and presumably there are no other known elements of known order.
+
+
+\paragraph{Proof of security.}
+We need to prove two things: 
+(1) privacy: there is a simulator that can generate a properly distributed
+signature just given $c$ and $m$, and 
+(2) security: an attacker that can generate a valid siganture for $c$ using
+some message $m' \neq m$ can be used to compute $\sqrt{t} \in \ZZ_n$
+for some $2 \leq t \leq 1000$. 
+
+\paragraph{Proof of privacy.}
+
+
+\paragraph{Proof of security.}
+ 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{A private air drop to ElGamal public keys}
+
+
+
+\bibliographystyle{alpha}
+\bibliography{paper}
+
+\end{document}

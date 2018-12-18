@@ -1,0 +1,48 @@
+\newcommand{\Section}[1]{\hyperref[#1]{Section~\ref*{#1}}}
+\newcommand{\Appendix}[1]{\hyperref[#1]{Appendix~\ref*{#1}}}
+\newcommand{\Theorem}[1]{\hyperref[#1]{Theorem~\ref*{#1}}}
+\newcommand{\Figure}[1]{\hyperref[#1]{Figure~\ref*{#1}}}
+\newcommand{\Corollary}[1]{\hyperref[#1]{Corollary~\ref{#1}}}
+\newcommand{\Lemma}[1]{\hyperref[#1]{Lemma~\ref{#1}}}
+\newcommand{\Protocol}[2]{\hyperref[#1]{\mathsf{Protocol\ {#2}}}}
+
+\newenvironment{proofof}[1]{\medskip\noindent {\bf Proof of {#1}.\ }}{\qed}
+\newenvironment{proofsk}{\medskip\noindent {\em Proof sketch.\ }}{\qed}
+
+\newcommand{\abs}[1]{\lvert #1 \rvert}
+\newcommand{\deq}{\mathrel{\mathop:}=}
+\newcommand{\GG}{\mathbb G}
+\newcommand{\ZZ}{\mathbb Z}
+\newcommand{\range}[1]{[{#1}]}
+\newcommand{\PK}{\mathit{pk}}
+\newcommand{\SK}{\mathit{sk}}
+
+\newcommand{\rgets}{\mathrel{\mathpalette\rgetscmd\relax}}
+\newcommand{\rgetscmd}{\ooalign{$\leftarrow$\cr
+    \hidewidth\raisebox{1.2\height}{\scalebox{0.5}{\ \rm R}}\hidewidth\cr}}
+
+
+%%%%  Algorithm environment
+
+\newenvironment{vbx}{\vbox\bgroup}{\egroup}
+    % the above technique works for vbox, but not for other commands...
+    % one can aso define this as
+    % \newenvironment{vbx}{\collect@body \vbox}{}
+    % where \collect@body is in amsmath
+    % this apparently works for more general commands
+
+\newcounter{linecount}
+
+\newenvironment{Boxed}{\begin{tabular}{|@{\qquad\quad}c@{\quad}|}\hline \begin{vbx}}%
+{\end{vbx} \\ \hline \end{tabular}}
+
+\newenvironment{DoAlg} {\begin{BoxedAlg}} {\end{BoxedAlg}}
+
+\newenvironment{RawAlg}{\setcounter{linecount}{0}\begin{vbx}\begin{tabbing}%
+0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= \kill}%
+{\end{tabbing}\end{vbx}}
+
+
+\newenvironment{alg}
+{\begin{quote}\begin{RawAlg}}
+{\end{RawAlg} \end{quote}}
