@@ -52,17 +52,137 @@ Informal security properties:
 \section{A private air drop to RSA public keys}
 
 From here we use the following notations:
-$\range{\ell}$ denotes the set $\{0,1,\ldots,\ell-1\}$ and 
-$\textsf{Primes}(\lambda)$ is a set of size $2^\lambda$ 
+$\lambda$ is the security parameter (e.g., $\lambda = 128$), 
+$\range{\ell}$ denotes the set of integers $\{0,1,\ldots,\ell-1\}$ and 
+$\primes$ is a set of size $2^\lambda$ 
 containing the smallest $2^\lambda$ odd primes. 
-
+%
 We will also need a set of public parameters that include the description
 of a cyclic group $\GG$ of unknown order.  We let $g$ and $h$ be two
 random generators of $\GG$ where the discrete-log of $g$ base $h$ is unknown. 
-We assume that an upper bound $G$ on $\abs{\GG}$ is known. 
 
-\noindent
-With this setup, the private air drop system works as follows:
+\subsection{Proving knowledge of the factorization of a hidden integer}
+
+We first develop a zero knowledge protocol for proving
+knowledge of the factorization of an integer $n$ given
+as a commitment to $n$.
+We let $N$ be a known upper bound on $n$, so that $n \in \range{N}$.
+For simplicity we will also assume that $\abs{\GG} < N$. 
+The given commitment to $n$ is $c \deq g^n \cdot h^s \in \GG$,
+where $s \rgets \range{N}$.
+
+To prove knowledge of the factorization of $n$ the prover
+proves knowledge of a $w \in \range{N}$ such that $w^2 \equiv t \pmod{n}$
+for some small public prime $t \in \ZZ$, namely $2 \leq t \leq \lambda$.
+That is, we provide a ZKPK for the relation
+\begin{equation} \label{eq:lang}
+  {\cal R} \deq \left\{ \Bigl( (c, t) \in \GG \times \range{\lambda},\ \ 
+                              (n, s, w, a) \in \range{N}^4 \Bigr)  \ \ 
+        \text{s.t.}\ \ 
+                \begin{split}
+                        c   & = g^n \cdot h^s \ \ \text{in $\GG$}, \\
+                        w^2 & = t + a \cdot n \ \ \text{in $\ZZ$}, \\
+                        t   & \ \textrm{a prime}
+                \end{split}  \right\}.
+\end{equation}
+Here $(c, t)$ is the statement and $(n, s, w, a)$ is the witness.
+The integer relation $w^2 = t + a n$ proves that 
+$w^2 \equiv t \pmod{n}$, as required.
+We note that a ZKPK for~\eqref{eq:lang} proves that $t \in \ZZ$ is a quadratic
+residue modulo the committed $n$.  Leaking this bit of information about $n$
+does not interfere with the application to a secure air drop.
+
+\medskip\noindent
+The ZKPK protocol for~\eqref{eq:lang} 
+between the prover $P$ and the verifier $V$ works as follows:
+\begin{itemize}
+\item input:  the verifier has $(c, t) \in \GG \times \range{\lambda}$ and 
+the prover has $(c, t, n, s, w, a) \in \GG \times \range{N}^5$  
+
+\item Prover $P$ chooses a random integer $s_1 \rgets \range{N}$ and computes
+       $c_1 \gets g^w \cdot h^{s_1} \in \GG$. 
+
+\item Next, define a homomorphism $\phi:\ZZ^7 \to \GG^3 \times \ZZ$ as follows:
+\begin{equation} \label{eq:hom}
+  \phi(w, \mathit{w2}, s_1, a, \mathit{an}, \mathit{s1w}, \mathit{sa}) \deq
+      \Bigl(\ 
+       g^w \cdot h^{\mathit{s1}},\ \ \ 
+       g^{\mathit{w2}} \cdot h^{\mathit{s1w}} / c_1^w,\ \ \ 
+       g^{\mathit{an}} \cdot h^{\mathit{sa}} / c^a,\ \ \ 
+       \mathit{w2} - \mathit{an}\ \Bigr)
+\end{equation}
+It is easy to see that $\phi$ is a group homomorphism.
+The range of $\phi$ is the group $\GG^3 \times \ZZ$.  
+We will write the group operation in this group multiplicatively.
+That is, if $(a_i, b_i, c_i, d_i) \in \GG^3 \times \ZZ$ for $i=1,2$
+then 
+\[  (a_1, b_1, c_1, d_1) \cdot (a_2, b_2, c_2, d_2) \deq 
+      (a_1 a_2,\ b_1 b_2,\ c_1 c_2,\ d_1 + d_2).  \]
+
+We need a ZKPK for a $\phi$-preimage of 
+$T \deq (c_1, 1, 1, t) \in \GG^3 \times \ZZ$. 
+In other words, we need a zero-knowledge proof of knowledge for a vector 
+$\vv' = (w', \mathit{w2}', s_1', a', \mathit{an}', 
+              \mathit{s1w}', \mathit{sa}') \in \ZZ^7$ 
+such that 
+\[   \phi(\vv') = T = (c_1, 1, 1, t) \in \GG^3 \times \ZZ.  \]
+Doing so proves 
+that $c_1$ is a commitment to $w' \in \ZZ$, 
+that $\mathit{w2}' = (w')^2$, and 
+that $\mathit{an}' = a' \cdot n$ for some integer $a'$.
+Then the last relation proves that $(w')^2 - a' \cdot n = t$ in $\ZZ$,
+as required. 
+
+We design a ZKPK for a $\phi$-preimage 
+using a zero-knowledge protocol from~\cite[\S 3.5]{ourpaper}:
+\begin{enumerate}
+\item The prover chooses a random $\rv \rgets \range{N}^7$
+and computes $\Rv \gets \phi(\rv) \in \GG^3 \times \ZZ$. \\
+It sends $(c_1, \Rv)$ to the verifier.
+
+\item The verifier chooses challenges $\mathit{ch} \rgets \range{2^\lambda}$
+and $\ell \rgets \primes$. \\
+It sends $(\mathit{ch}, \ell)$ to the prover.
+
+\item The prover computes:
+\[  \xv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^7, \quad
+    \zv_\ell \gets (\xv \bmod \ell) \in \range{\ell}^7, \quad
+    \zv_q \gets \lfloor \xv / \ell \rfloor \in \ZZ^7, \quad
+    \Zv_q \gets \phi(\zv_q)  
+\]
+and sends $(\Zv_q, \zv_\ell) \in \GG^3 \times \ZZ \times \range{\ell}^7$ 
+to the verifier. 
+
+\item The verifier accepts if 
+$\ \Zv_q^\ell \cdot \phi(\zv_\ell) = T^\mathit{ch} \cdot \Rv\ $ in 
+$\GG^3 \times \ZZ$.
+\end{enumerate}
+\end{itemize}
+
+\paragraph{Comment.}
+There is a seemingly simpler method to prove that one knows the
+factorization of~$n$, namely, prove that one knows $p$ such that $p$
+divides $n$.  That is, instead of committing to $w$ we would commit to
+$p$ and then prove that the committed value divides $n$. But we would
+also need to prove that the committed factor is not one of 
+$\{1, -1, n, -n\}$, and that results in a longer proof.
+
+\paragraph{Proof of security.}
+We need to prove the protocol above is zero-knowledge and a 
+proof of knowledge. 
+
+\paragraph{Proof of zero-knowledge.}
+
+
+\paragraph{Proof of extractability.}
+
+
+
+\subsection{The concrete air drop system}
+
+The air drop system is obtained by applying the Fiat-Shamir
+heuristic to the protocol from the previous section. 
+The concrete private air drop system works as follows:
 
 \paragraph{Algorithm $\text{sendTokens}(\PK)$:}
 To send tokens to an RSA public key $\PK = (n, e)$ do:
@@ -97,132 +217,61 @@ To withdraw the funds associated with the token $c$ the user
 signs a withdrawl message $m$ using the RSA secret key $\SK = (n,p,q)$ 
 as follows:
 \begin{itemize}
-\item Find a prime $2 \leq t \leq 1000$  such that $t$ is a quadratic 
+\item find a prime $2 \leq t \leq \lambda$  such that $t$ is a quadratic 
 residue in $\ZZ_n$. 
 
-\item The user proves possession of $\SK$ by proving knowledge of 
-$w \deq \sqrt{t} \in \ZZ_n$ without revealing $w$ or $n$. 
-The user does so as follows:
-\begin{enumerate}
 \item find integers $(w,a)$ such that $w^2 = t + a n$ in $\ZZ$
            (i.e. $w$ is a square root of $t$ modulo $n$)
 
-\item choose a random $G$-bit integer $s_1$ and compute
+\item choose a random $s_1 \rgets \range{N}$ and compute
            $c_1 \gets g^w \cdot h^{s_1} \in \GG$.
 
-\item with $(c_1, t)$ public, the computed signature is a
-  signature of knowledge of seven integers 
-%$(n, w, a, s, s_1)$ where
-%\begin{align*}
-%  c & = g^n h^s         \quad\in \GG,  \\
-%  c_1 & = g^w h^{s_1}      \quad\in \GG,   \\
-%  w^2 & = t + a \cdot n  \quad\in \ZZ.
-%\end{align*}
-%The ZKPK works by proving knowledge of integers
-   $\textit{witness} = (w, \textit{w2}, s_1, a, \textit{an}, \textit{s1w}, \textit{sa}) \in \ZZ^7$
-satisfying:
-\begin{align} \label{eq:proofeq}
-\begin{split}
-     c_1 & = g^w h^{\textit{s1}} \\
-     g^{\textit{w2}} h^{\textit{s1w}} & = c_1^w \\
-     g^{\textit{an}} \cdot h^{\textit{sa}} & = c^a \\
-     \textit{w2} & = t + \textit{an}
-\end{split}
-\end{align}
-\end{enumerate}
-\end{itemize}
-If~\eqref{eq:proofeq} holds then $w2 = w^2$ and $\mathit{an} = a \cdot n$
-in $\ZZ$.
-The last equation in~\eqref{eq:proofeq} 
-ensures that $w^2 = t + a \cdot n$ in $\ZZ$,
-as required. 
+\item choose a random $\rv \rgets \range{N}^7$
+and compute $\Rv \gets \phi(\rv) \in \GG^3 \times \ZZ$.
 
-To implement the ZKPK for~\eqref{eq:proofeq} let us define a 
-homomorphism $\phi:\ZZ^7 \to \GG^3 \times \ZZ$ as follows:
-\[ 
-  \phi(w, \textit{w2}, s_1, a, \textit{an}, \textit{s1w}, \textit{sa}) \deq
-      \Big(\ 
-       g^w \cdot h^{\textit{s1}},\ \ \ 
-       g^{\textit{w2}} \cdot h^{\textit{s1w}} / c_1^w,\ \ \ 
-       g^{\textit{an}} \cdot h^{\textit{sa}} / c^a,\ \ \ 
-       \textit{w2} - \textit{an}\ \Big)
+\item compute $\mathit{seed} \gets \text{Hash}(m, \GG, g, h, c, c_1, t, \Rv$).
+
+\item
+use a $\text{PRNG}(\mathit{seed})$ to generate $(\mathit{ch}, \ell)$, 
+where $\mathit{ch} \in \range{2^\lambda}$ and $\ell \in \primes$.
+
+\item compute:
+\[  \xv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^7, \quad
+    \zv_\ell \gets (\xv \bmod \ell) \in \range{\ell}^7, \quad
+    \zv_q \gets \lfloor \xv / \ell \rfloor \in \ZZ^7, \quad
+    \Zv_q \gets \phi(\zv_q) \in \GG^3 \times \ZZ.
 \]
-Then we need a ZKPK for a vector $v \in \ZZ^7$
-such that $\phi(v) = (c_1, 1, 1, t) \in \GG^3 \times \ZZ$. 
-We to so using a zero-knowledge protocol from~\cite[\S 3.5]{ourpaper} 
-and convert it
-into a signature scheme using Fiat-Shamir.  
-The resulting signature scheme works as follows:
-\begin{itemize}
-\item choose seven random integers
-            $r_w, r_\textit{w2}, r_\textit{s1}, r_a, r_\textit{an}, r_\textit{s1w}, r_\textit{sa} \rgets \range{B}$ and compute
-\[ (A,B,C,D) \gets \phi(r_w, r_\textit{w2}, r_\textit{s1}, r_a, r_\textit{an}, r_\textit{s1w}, r_\textit{sa}) \in \GG^3 \times \ZZ. \]
-The range $\range{B}$ needs to be chosen so that the
-random values are sufficiently big to ensure that the vector $z \in \ZZ^7$ below
-is statistically independent of the vector $\textit{witness} \in \ZZ^7$. 
-
-
-\item compute
-            $\textit{PRNGKey} = \text{Hash}(m, G, g, h, c, c_1, t, A, B, C, D)$.
-Use a PRNG seeded with $\textit{PRNGKey}$ to generate a random
-  128-bit $\textit{chal}$ and a random 128-bit prime $\ell$.
-
-
-\item compute the integer vector
-   \[  z \gets \textit{chal} \cdot (w, \textit{w2}, \textit{s1}, a, \textit{an}, \textit{s1w}, \textit{sa}) +
-                   (r_w, r_\textit{w2}, r_\textit{s1}, r_a, r_\textit{an}, r_\textit{s1w}, r_\textit{sa})  \in \ZZ^7  \]
-Let $z \gets (z_w, z_\textit{w2}, z_\textit{s1}, z_a, z_\textit{an}, z_\textit{s1w}, z_\textit{sa})$
-and $z' \gets (z \bmod \ell) \in \ZZ^7$.
-
-\item compute 
-\[  (A_q, B_q, C_q, D_q) \gets \phi\Big(
-        \lfloor z_w / \ell \rfloor, 
-        \lfloor z_\textit{w2} / \ell \rfloor, 
-        \lfloor z_\textit{s1} / \ell \rfloor, 
-        \lfloor z_a / \ell \rfloor, 
-        \lfloor z_\textit{an} / \ell \rfloor, 
-        \lfloor z_\textit{s1w} / \ell \rfloor, 
-        \lfloor z_\textit{sa} / \ell \rfloor \Big) \in \GG^3 \times \ZZ. \]
 
 \item output the signature 
-$\text{sig} = (c_1, t, \textit{chal}, \ell, A_q, B_q, C_q, D_q, z')$.
+$\mathit{sig} = (c_1, t, \mathit{ch}, \ell, \Zv_q, \zv_\ell)$.
 \end{itemize}
 
 
 
-\paragraph{Algorithm $\text{verify}(c, m, \text{sig}):$}
-Verify that $\text{sig}$ is a valid signature for
-token $c$ on the message $m$.
+\paragraph{Algorithm $\text{verify}(c, m, \mathit{sig}):$}
+Verify that $\mathit{sig} = (c_1, t, \mathit{ch}, \ell, \Zv_q, \zv_\ell)$ 
+is a valid signature for token~$c$ on the message~$m$.
 \begin{itemize}
-\item compute $(A_\ell, B_\ell, C_\ell, D_\ell) \gets \phi(z') \in \GG^3 \times \ZZ$.
-\item compute 
-\begin{align*}
-     A & \gets A_q^\ell \cdot A_\ell  / c_1^{\textit{chal}} \\
-     B & \gets B_q^\ell \cdot B_\ell  \\
-     C & \gets C_q^\ell \cdot C_\ell  \\
-     D & \gets D_q \cdot \ell + D_\ell - (t \cdot \textit{chal}) \\
-     \textit{PRNGkey} & \gets \text{Hash}(m, G, g, h, c, c_1, t, A, B, C, D)
-\end{align*}
+\item reject if $t \notin \range{\lambda}$ or $t$ is not a prime.
 
-\item use a PRNG seeded with $\textit{PRNGkey}$ to generate $\text{chal}'$ and
-  $\ell'$ as described in the sign algorithm. Since $\ell$ is
+\item with $T \deq (c_1, 1, 1, t) \in \GG^3 \times \ZZ$, 
+compute $\Rv' \gets \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^3 \times \ZZ$.
+
+\item compute $\mathit{seed}' \gets \text{Hash}(m, \GG, g, h, c, c_1, t, \Rv'$)
+
+\item use a $\text{PRNG}(\mathit{seed}')$ to generate 
+  $\mathit{ch}' \in \range{2^\lambda}$ and $\ell' \in \primes$. \\
+Since $\ell$ is
   included in the signature, the verifier does not need to search for
   a prime, but can instead verify that the given $\ell$ is prime and
   is not too far from the base starting point of the prime search.
 
-\item accept iff $\text{chal}' = \text{chal}$ and $\ell' = \ell$.
+\item accept iff $\mathit{ch}' = \mathit{ch}$ and $\ell' = \ell$.
 \end{itemize}
 
 
 
 \paragraph{Comments.}
-There is a seemingly simpler method to prove that one knows the
-factorization of $n$, namely, prove that one knows $p$ such that $p$
-divides $n$.  That is, instead of committing to $w$ we would commit to
-$p$ and then prove that the committed value divides $n$. But we would
-also need to prove that the committed factor is not one of 
-$\{1, -1, n, -n\}$, and that will result in a longer proof.
-
 This scheme is only secure is a group where there are no known
 elements of low order.  The group $\ZZ/n$ is not such a group because
 of the element $-1$ of order $2$.  To eliminate this element we work

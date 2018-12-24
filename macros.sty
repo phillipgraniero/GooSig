@@ -12,14 +12,28 @@
 \newcommand{\abs}[1]{\lvert #1 \rvert}
 \newcommand{\deq}{\mathrel{\mathop:}=}
 \newcommand{\GG}{\mathbb G}
+\newcommand{\HH}{\mathbb H}
 \newcommand{\ZZ}{\mathbb Z}
 \newcommand{\range}[1]{[{#1}]}
 \newcommand{\PK}{\mathit{pk}}
 \newcommand{\SK}{\mathit{sk}}
+\newcommand{\uid}{\mathit{uid}}
 
 \newcommand{\rgets}{\mathrel{\mathpalette\rgetscmd\relax}}
 \newcommand{\rgetscmd}{\ooalign{$\leftarrow$\cr
     \hidewidth\raisebox{1.2\height}{\scalebox{0.5}{\ \rm R}}\hidewidth\cr}}
+
+\newcommand{\primes}{\textsf{Primes}(\lambda)}
+
+%%%%  Vectors
+
+\newcommand{\rv}{\mathbf{r}}
+\newcommand{\Rv}{\mathbf{R}}
+\newcommand{\vv}{\mathbf{v}}
+\newcommand{\xv}{\mathbf{x}}
+\newcommand{\zv}{\mathbf{z}}
+\newcommand{\Zv}{\mathbf{Z}}
+
 
 
 %%%%  Algorithm environment
@@ -42,7 +56,12 @@
 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= 0000 \= \kill}%
 {\end{tabbing}\end{vbx}}
 
-
 \newenvironment{alg}
 {\begin{quote}\begin{RawAlg}}
 {\end{RawAlg} \end{quote}}
+
+% general line number, with stepping
+\newcommand{\genlnum}[2]{\refstepcounter{linecount}\nsgenlnum{#1}{#2}}
+
+% plain line number
+\newcommand{\lnum}{\genlnum{}{}}
