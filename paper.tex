@@ -101,35 +101,41 @@ between the prover $P$ and the verifier $V$ works as follows:
 \item input:  the verifier has $(c, t) \in \GG \times \range{\lambda}$ and 
 the prover has $(c, t, n, s, w, a) \in \GG \times \range{N}^5$  
 
-\item Prover $P$ chooses a random integer $s_1 \rgets \range{N}$ and computes
-       $c_1 \gets g^w \cdot h^{s_1} \in \GG$. 
+\item Prover $P$ chooses a random integers $s_1, s_2 \rgets \range{N}$ and computes
+       $c_1 \gets g^w \cdot h^{s_1} \in \GG$ and $c_2 \gets g^a \cdot h^{s_2}$.
 
-\item Next, define a homomorphism $\phi:\ZZ^7 \to \GG^3 \times \ZZ$ as follows:
+\item Next, define a homomorphism $\phi:\ZZ^8 \to \GG^4 \times \ZZ$ 
+parameterized by $g, h, c, c_1, c_2$ as follows:
 \begin{equation} \label{eq:hom}
-  \phi(w, \mathit{w2}, s_1, a, \mathit{an}, \mathit{s1w}, \mathit{sa}) \deq
+  \phi\left(\!\!\!\begin{array}{l}
+                w, \mathit{w2}, s_1, a, \\
+                \mathit{an}, \mathit{s1w}, \mathit{sa}, s_2
+      \end{array}  \!\!\!\right) \deq
       \Bigl(\ 
        g^w \cdot h^{\mathit{s1}},\ \ \ 
+       g^a \cdot h^{\mathit{s2}},\ \ \ 
        g^{\mathit{w2}} \cdot h^{\mathit{s1w}} / c_1^w,\ \ \ 
        g^{\mathit{an}} \cdot h^{\mathit{sa}} / c^a,\ \ \ 
        \mathit{w2} - \mathit{an}\ \Bigr)
 \end{equation}
 It is easy to see that $\phi$ is a group homomorphism.
-The range of $\phi$ is the group $\GG^3 \times \ZZ$.  
+The range of $\phi$ is the group $\GG^4 \times \ZZ$.  
 We will write the group operation in this group multiplicatively.
-That is, if $(a_i, b_i, c_i, d_i) \in \GG^3 \times \ZZ$ for $i=1,2$
+That is, if $(a_i, b_i, c_i, d_i, e_i) \in \GG^4 \times \ZZ$ for $i=1,2$
 then 
-\[  (a_1, b_1, c_1, d_1) \cdot (a_2, b_2, c_2, d_2) \deq 
-      (a_1 a_2,\ b_1 b_2,\ c_1 c_2,\ d_1 + d_2).  \]
+\[  (a_1, b_1, c_1, d_1, e_1) \cdot (a_2, b_2, c_2, d_2, e_2) \deq 
+      (a_1 a_2,\ b_1 b_2,\ c_1 c_2,\ d_1 d_2,\ e_1 + e_2).  \]
 
 We need a ZKPK for a $\phi$-preimage of 
-$T \deq (c_1, 1, 1, t) \in \GG^3 \times \ZZ$. 
+$T \deq (c_1, c_2, 1, 1, t) \in \GG^4 \times \ZZ$. 
 In other words, we need a zero-knowledge proof of knowledge for a vector 
 $\vv' = (w', \mathit{w2}', s_1', a', \mathit{an}', 
-              \mathit{s1w}', \mathit{sa}') \in \ZZ^7$ 
+              \mathit{s1w}', \mathit{sa}', s_2') \in \ZZ^8$ 
 such that 
-\[   \phi(\vv') = T = (c_1, 1, 1, t) \in \GG^3 \times \ZZ.  \]
+\[   \phi(\vv') = T = (c_1, c_2, 1, 1, t) \in \GG^4 \times \ZZ.  \]
 Doing so proves 
 that $c_1$ is a commitment to $w' \in \ZZ$, 
+that $c_2$ is a commitment to $a' \in \ZZ$,
 that $\mathit{w2}' = (w')^2$, and 
 that $\mathit{an}' = a' \cdot n$ for some integer $a'$.
 Then the last relation proves that $(w')^2 - a' \cdot n = t$ in $\ZZ$,
@@ -138,30 +144,37 @@ as required.
 We design a ZKPK for a $\phi$-preimage 
 using a zero-knowledge protocol from~\cite[\S 3.5]{ourpaper}:
 \begin{enumerate}
-\item The prover chooses a random $\rv \rgets \range{N}^7$
-and computes $\Rv \gets \phi(\rv) \in \GG^3 \times \ZZ$. \\
-It sends $(c_1, \Rv)$ to the verifier.
+\item The prover chooses a random $\rv \rgets \range{N}^8$
+and computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$. \\
+It sends $(c_1, c_2, \Rv)$ to the verifier.
 
 \item The verifier chooses challenges $\mathit{ch} \rgets \range{2^\lambda}$
 and $\ell \rgets \primes$. \\
 It sends $(\ell, \mathit{ch})$ to the prover.
 
 \item The prover computes:
-\[  \zv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^7, \quad
-    \zv_\ell \gets (\zv \bmod \ell) \in \range{\ell}^7, \quad
-    \zv_q \gets \lfloor \zv / \ell \rfloor \in \ZZ^7, \quad
+\[  \zv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^8, \quad
+    \zv_\ell \gets (\zv \bmod \ell) \in \range{\ell}^8, \quad
+    \zv_q \gets \lfloor \zv / \ell \rfloor \in \ZZ^8, \quad
     \Zv_q \gets \phi(\zv_q)  
 \]
-and sends $(\Zv_q, \zv_\ell) \in (\GG^3 \times \ZZ) \times \range{\ell}^7$ 
+and sends $(\Zv_q, \zv_\ell) \in (\GG^4 \times \ZZ) \times \range{\ell}^8$ 
 to the verifier. 
 
 \item The verifier accepts if 
 $\ \Zv_q^\ell \cdot \phi(\zv_\ell) = T^\mathit{ch} \cdot \Rv\ $ in 
-$\GG^3 \times \ZZ$.
+$\GG^4 \times \ZZ$.
 \end{enumerate}
 \end{itemize}
 
-\paragraph{Comment.}
+\paragraph{Comment 1.}
+The commitment $c_2$ to the integer $a$ is necessary for soundness,
+and in particular to ensure that $a$ is an integer.  If $c_2$ along
+with $s_2$ and the second coordinate of $\phi$ are eliminated then there
+is an attack where an adversarial prover can prove knowledge of
+$(\sqrt{3} \bmod n)$ using $a = 1/n$ and $w = 2$.
+
+\paragraph{Comment 2.}
 There is a seemingly simpler method to prove that one knows the
 factorization of~$n$, namely, prove that one knows $p$ such that $p$
 divides $n$.  That is, instead of committing to $w$ we would commit to
@@ -185,8 +198,8 @@ for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang}.
 
 We say that ${\cal G}$ is an honest instance
 generator for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}
-if it chooses some integers $n, s, t$, and outputs $(c, t)$ where
-$c = g^n h^s \in \GG$. 
+if it chooses integers $n, s, t$, and outputs $(c, t)$ where
+$c \deq g^n h^s \in \GG$. 
 
 \begin{theorem}
 Protocol $\prot{P}$ is an argument of knowledge
@@ -201,49 +214,54 @@ We construct an extractor that given an instance $(c,t)$
 generated by ${\cal G}$,
 interacts with a convincing prover and outputs a witness $(n, s, w, a)$ 
 for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}. 
-The protocol transcript is $(c_1, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$.
+The protocol transcript is $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$.
 The extractor rewinds the prover and obtains two
-accepting conversations
-${\cal T}_1 \deq (c_1, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$
+accepting transcripts
+${\cal T}_1 \deq (c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$
 and 
-${\cal T}_2 \deq (c_1, \Rv, \ell, \mathit{ch}', \Zv_q', \zv_\ell')$.
+${\cal T}_2 \deq (c_1, c_2, \Rv, \ell, \mathit{ch}', \Zv_q', \zv_\ell')$.
 Dividing the corresponding verification equations one by the other
 we obtain
 \[   (\Zv_q / \Zv_q')^\ell \cdot \phi(\zv_\ell - \zv_\ell') = 
           T^{\mathit{ch} - \mathit{ch}'}. \]
-Let $\zv_\ell - \zv_\ell' = \Big(\Delta w,\ \Delta \mathit{w2},\ \Delta \mathit{s1},\ \Delta a,\ \Delta \mathit{an},\ \Delta \mathit{s1w},\ \Delta \mathit{sa} \Big) \in \ZZ^7$ and let $\Delta \mathit{ch} = \mathit{ch} - \mathit{ch}' \in \ZZ$.
+Let $\zv_\ell - \zv_\ell' = \Big(\Delta w,\ \Delta \mathit{w2},\ \Delta \mathit{s1},\ \Delta a,\ \Delta \mathit{an},\ \Delta \mathit{s1w},\ \Delta \mathit{sa},\ \Delta \mathit{s2} \Big) \in \ZZ^8$ and let $\Delta \mathit{ch} = \mathit{ch} - \mathit{ch}' \in \ZZ$.
 Then plugging this into the definition of $\phi$ we obtain
 \begin{equation} \label{eq:messy}
       (\Zv_q / \Zv_q')^\ell \cdot
       \Bigl(\ 
        g^{\Delta w} \cdot h^{\Delta \mathit{s1}},\ \ \ 
+       g^{\Delta a} \cdot h^{\Delta \mathit{s2}},\ \ \ 
        g^{\Delta \mathit{w2}} \cdot h^{\Delta \mathit{s1w}} / c_1^{\Delta w},\ \ \ 
        g^{\Delta \mathit{an}} \cdot h^{\Delta \mathit{sa}} / c^{\Delta a},\ \ \ 
        \Delta \mathit{w2} - \Delta \mathit{an}\ \Bigr)
-          = (c_1, 1, 1, t)^{\Delta \mathit{ch}}.
+          = (c_1, c_2, 1, 1, t)^{\Delta \mathit{ch}}.
 \end{equation}
-Let $\Zv_q / \Zv_q' = (z_1,z_2,z_3,z_4)$ 
-where $z_1,z_2,z_3 \in \GG$ and $z_4 \in \ZZ$.  
-In a generic group $\GG$, the group elements $z_1,z_2,z_3$ 
+Let $\Zv_q / \Zv_q' = (z_1, z_2, z_3, z_4, z_5)$ 
+where $z_1, z_2, z_3, z_4 \in \GG$ and $z_5 \in \ZZ$.  
+In a generic group $\GG$, the group elements $z_1, z_2, z_3, z_4$ 
 must satisfy $z_i = g^{\alpha_i} h^{\beta_i} c^{\gamma_i} \prod_{j=1}^m g_j^{\delta_{i,j}}$
-for $i=1,2,3$, 
+for $i=1,2,3,4$, 
 and $c_1 = g^{\alpha} h^{\beta} c^\gamma \prod_{j=1}^m g_j^{\delta_{j}}$,
+and $c_2 = g^{\alpha_0} h^{\beta_0} c^\gamma \prod_{j=1}^m g_j^{\delta_{0,j}}$,
 where the extractor knows all the listed integer exponents.
 Here $g_1,\ldots,g_m$ are random group elements produced in response
 to a generic group oracle query for a random group element. 
 
-It now folows from~\eqref{eq:messy}, and from $c = g^n h^s$, 
-and by uniquness of representation in generic groups,
+It now follows from~\eqref{eq:messy}, and from $c = g^n h^s$, 
+and by uniqueness of representation in generic groups,
 that the following equations must hold over the integers:
 \begin{align*}
   \ell \cdot (\alpha_1 + n \cdot \gamma_1) + \Delta w & = (\alpha + n \cdot \gamma) \cdot \Delta \mathit{ch},  &
   \ell \cdot (\beta_1 + s \cdot \gamma_1) + \Delta \mathit{s1} & = (\beta + s \cdot \gamma) \cdot \Delta \mathit{ch}  
 \\
-  \ell \cdot (\alpha_2 + n \cdot \gamma_2) + \Delta \mathit{w2} & = (\alpha + n \cdot \gamma) \cdot \Delta w,  &
-  \ell \cdot (\beta_2 + s \cdot \gamma_2) + \Delta \mathit{s1w} & = (\beta + s \cdot \gamma) \cdot \Delta w   
+  \ell \cdot (\alpha_2 + n \cdot \gamma_2) + \Delta a & = (\alpha_0 + n \cdot \gamma_0) \cdot \Delta \mathit{ch},  &
+  \ell \cdot (\beta_2 + s \cdot \gamma_2) + \Delta \mathit{s2} & = (\beta_0 + s \cdot \gamma_0) \cdot \Delta \mathit{ch}  
 \\
-  \ell \cdot (\alpha_3 + n \cdot \gamma_3) + \Delta \mathit{an} & = n \cdot \Delta a,  & 
-  \ell \cdot (\beta_3 + s \cdot \gamma_3) + \Delta \mathit{sa} & = s \cdot \Delta a   
+  \ell \cdot (\alpha_3 + n \cdot \gamma_3) + \Delta \mathit{w2} & = (\alpha + n \cdot \gamma) \cdot \Delta w,  &
+  \ell \cdot (\beta_3 + s \cdot \gamma_3) + \Delta \mathit{s1w} & = (\beta + s \cdot \gamma) \cdot \Delta w   
+\\
+  \ell \cdot (\alpha_4 + n \cdot \gamma_4) + \Delta \mathit{an} & = n \cdot \Delta a,  & 
+  \ell \cdot (\beta_4 + s \cdot \gamma_4) + \Delta \mathit{sa} & = s \cdot \Delta a   
 \\
   \ell \cdot z_4 + \Delta \mathit{w2} - \Delta \mathit{an} & = t \cdot \Delta \mathit{ch} 
 \end{align*}
@@ -253,28 +271,35 @@ Reducing these equations modulo $\ell$ gives:
   \Delta w & \equiv (\alpha + n \cdot \gamma) \cdot \Delta \mathit{ch}  &
   \Delta \mathit{s1} & \equiv (\beta + s \cdot \gamma) \cdot \Delta \mathit{ch}  & \pmod{\ell} 
 \label{eq:first} \\
+  \Delta a & \equiv (\alpha_0 + n \cdot \gamma_0) \cdot \Delta \mathit{ch}  &
+  \Delta \mathit{s2} & \equiv (\beta_0 + s \cdot \gamma_0) \cdot \Delta \mathit{ch}  & \pmod{\ell} 
+\label{eq:firsta} \\
   \Delta \mathit{w2} & \equiv (\alpha + n \cdot \gamma) \cdot \Delta w  &
   \Delta \mathit{s1w} & \equiv (\beta + s \cdot \gamma) \cdot \Delta w   & \pmod{\ell} 
 \label{eq:second} \\
   \Delta \mathit{an} & \equiv n \cdot \Delta a  & 
   \Delta \mathit{sa} & \equiv s \cdot \Delta a   & \pmod{\ell} 
 \label{eq:third} \\
-  \Delta \mathit{w2} - \Delta \mathit{an} & = t \cdot \Delta \mathit{ch} 
+  \Delta \mathit{w2} - \Delta \mathit{an} & \equiv t \cdot \Delta \mathit{ch} 
       &&& \pmod{\ell} 
 \label{eq:fourth} 
 \end{align}
 
 Consider the left equation in~\eqref{eq:first}
 and define $w \deq \alpha + n \cdot \gamma \in \ZZ$.
-For any pair of accepting conversations such as $({\cal T}_1, {\cal T}_2)$,
+For any pair of accepting transcripts such as $({\cal T}_1, {\cal T}_2)$,
 it must be the case that 
 $\Delta w \equiv w \cdot \Delta \mathit{ch} \pmod{\ell}$.
 The extractor knows $\Delta w$ and $\Delta \mathit{ch}$.
 Hence, by constructing a polynomial number of such accepting transcript pairs, 
 the extractor can recover $w \in \ZZ$ using the chinese remainder theorem. 
-%In the same way, the extractor can recover 
-%$s_1 \deq \beta + s \cdot \gamma \in \ZZ$  
-%from the right equation in~\eqref{eq:first}.
+
+In exactly the same way, the extractor can recover 
+$a \deq \alpha_0 + n \cdot \gamma_0 \in \ZZ$  
+from the left equation in~\eqref{eq:firsta}.
+For any pair of accepting transcripts 
+it must be the case that 
+$\Delta a \equiv a \cdot \Delta \mathit{ch} \pmod{\ell}$.
 
 Next, consider the left equation in~\eqref{eq:second}.
 Using $w = \alpha + n \cdot \gamma$ and
@@ -285,8 +310,17 @@ Using $\Delta \mathit{w2} \equiv w^2 \cdot \Delta \mathit{ch} \pmod{\ell}$
 in~\eqref{eq:fourth}
 gives $\Delta \mathit{an} \equiv (w^2 - t) \cdot \Delta \mathit{ch} \pmod{\ell}$. 
 Finally, the left equality in~\eqref{eq:third} 
-gives $(w^2 - t)\cdot \Delta \mathit{ch} \equiv n \cdot \Delta a \pmod{\ell}$. 
-
+gives $(w^2 - t)\cdot \Delta \mathit{ch} \equiv n \cdot \Delta a \pmod{\ell}$.
+Using $\Delta a \equiv a \cdot \Delta \mathit{ch} \pmod{\ell}$
+we obtain that the extracted integers $w$ and $a$ must satisfy
+$(w^2 - t)\cdot \Delta \mathit{ch} \equiv 
+      n \cdot a \cdot \Delta \mathit{ch} \pmod{\ell}$.  
+Since $\ell$ does not divide $\Delta \mathit{ch}$ with overwhelming
+probability we obtain that $w^2 - t \equiv n \cdot a \pmod{\ell}$.
+Since this equality holds modulo a random $\ell \in \primes$ 
+with overwhelming probability, 
+the equality $w^2 - t = n \cdot a$ must hold over the integers,
+as required. 
 \end{proof}
 
 
@@ -328,7 +362,7 @@ an encryption of $s'$, instead of $s$, which can shrink~$c'$.
 
 \paragraph{Algorithm $\text{sign}(\SK, (c, s), m)$:}  
 To withdraw the funds associated with the token $c$ the user
-signs a withdrawl message $m$ using the RSA secret key $\SK = (n,p,q)$ 
+signs a withdrawal message $m$ using the RSA secret key $\SK = (n,p,q)$ 
 as follows:
 \begin{itemize}
 \item find a prime $2 \leq t \leq \lambda$  such that $t$ is a quadratic 
@@ -398,7 +432,7 @@ and presumably there are no other known elements of known order.
 We need to prove two things: 
 (1) privacy: there is a simulator that can generate a properly distributed
 signature just given $c$ and $m$, and 
-(2) security: an attacker that can generate a valid siganture for $c$ using
+(2) security: an attacker that can generate a valid signature for $c$ using
 some message $m' \neq m$ can be used to compute $\sqrt{t} \in \ZZ_n$
 for some $2 \leq t \leq 1000$. 
 
