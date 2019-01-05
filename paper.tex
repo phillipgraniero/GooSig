@@ -48,6 +48,35 @@ Informal security properties:
 (one-time) chosen message attack.
 
 
+\subsection{Zero-knowledge proofs in generic groups}
+
+Let $\adv$ be an algorithm that outputs 
+a generic group element $u \in \GG$.
+The following lemma shows that there is an extractor that
+can extract from $\adv$ an integer representation of $u$
+relative to a supplied set of group generators.
+Moreover, this integer representation is unique.
+
+\begin{lemma}[Uniqueness of representation in generic groups]
+\label{lem:unique}
+Let $\adv_1, \adv_2$ be two randomized algorithms that interact
+with generic group oracles for the group $\GG$ and 
+output $u_1, u_2 \in \GG$, respectively. 
+Suppose that each algorithm makes at most $q$ type-1 queries
+and let $g_1,\ldots,g_q \in \GG$ be the returned random group elements. 
+
+There is an extractor $\bdv$ that emulates 
+the generic group oracles for $\adv_1$ and $\adv_2$, 
+and for $i=1,2$ when $\bdv$ interacts with $\adv_i$ 
+the following holds with overwhelming probability:
+if $\adv_i$ outputs $u_i \in \GG$ 
+then the extractor $\bdv_i$ outputs a representation
+$\alpha_{i,1},\ldots,\alpha_{i,q} \in \ZZ$
+such that $u_i = g_1^{\alpha_{i,1}} \cdots g_q^{\alpha_{i,q}}$.
+Moreover, if $u_1 = u_2$ then the two representations are the same,
+namely $\alpha_{1,j} = \alpha_{2,j}$ for $j=1,\ldots,q$. 
+\end{lemma}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{A private air drop to RSA public keys}
@@ -66,7 +95,7 @@ random generators of $\GG$ where the discrete-log of $g$ base $h$ is unknown.
 
 Let $n \in \range{N}$ be a secret integer 
 where $N$ is a public upper bound on~$n$.
-For simplicity we will also assume that $\abs{\GG} < N$.
+For simplicity we will also assume that $\abs{\GG} < N/2^{2 \lambda}$.
 Let $c \deq g^n \cdot h^s \in \GG$ be a commitment to $n$, 
 where $s \rgets \range{N}$.  
 We first develop a zero knowledge protocol for proving knowledge of the
@@ -192,6 +221,33 @@ for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang}.
 \end{theorem}
 
 \begin{proof}
+The simulator takes $(c, t)$ as input and outputs the simulated transcript
+$(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$ as follows:
+\begin{alg}
+choose random $c_1, c_2 \rgets \GG$ and $\ell \rgets \primes$, 
+$\mathit{ch} \rgets \range{2^\lambda}$, \\
+choose random $\zv_\ell \rgets \range{\ell}^8$, \\
+choose random $Z_1,Z_2,Z_3,Z_4 \rgets \GG$,\  $Z_5 \rgets \range{N}$,\ 
+and set $\Zv_q \deq (Z_1, Z_2, Z_3, Z_4, Z_5) \in \GG^4 \times \ZZ$, \\
+compute $\Rv \deq \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$. 
+\end{alg}
+We show the simulated transcript is distributed statistically close
+to an accepting transcript of a real protocol execution.
+First observe that $c_1, c_2, \Rv, \ell, \mathit{ch}$ are all distributed 
+as in a real transcript.  It remains to show that the same holds
+for $\zv_\ell$ and $\Zv_q$. 
+In an interaction with a real prover 
+the vector $\rv$ is chosen uniformly in $\range{N}^8$.
+Consider one value $r \rgets \range{N}$.
+Because $N$ is much larger than $\ell \cdot \abs{\GG}$
+we know that the pair 
+$\big((\lfloor r/\ell \rfloor \bmod \abs{\GG}),\ (r \bmod \ell) \big)$
+is statistically close to uniform in $\range{\abs{\GG}} \times \range{\ell}$.
+It follows that $\zv_\ell$ is statistically close to uniform 
+in $\range{\ell}^8$ and 
+$Z_1,Z_2,Z_3,Z_4 \in \GG$ are statistically close to uniform in $\GG$, 
+as in the simulation.
+It remains to argue that $Z_5$ is simulated correctly. 
 
 \end{proof}
 
@@ -248,7 +304,7 @@ Here $g_1,\ldots,g_m$ are random group elements produced in response
 to a generic group oracle query for a random group element. 
 
 It now follows from~\eqref{eq:messy}, and from $c = g^n h^s$, 
-and by uniqueness of representation in generic groups,
+and by uniqueness of representation in generic groups (\Lemma{lem:unique}),
 that the following equations must hold over the integers:
 \begin{align*}
   \ell \cdot (\alpha_1 + n \cdot \gamma_1) + \Delta w & = (\alpha + n \cdot \gamma) \cdot \Delta \mathit{ch},  &
