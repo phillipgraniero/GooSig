@@ -30,20 +30,21 @@ A private air drop (PAD) system is a triple of efficient algorithms:
 \begin{itemize}
 \item $\text{sendTokens}(\PK) \to (c, s)$:
 Generates a token $c$ to be posted on the blockchain,
-and a secret $s$ given to the recipient via a private channel
-(e.g., by posting an encryption of $s$ encrypted under $\PK$ 
-to the blockchain). 
+and a secret~$s$ given to the recipient via a private channel.
+For example, an encryption of $s$ under $\PK$ can be posted
+to the blockchain.   The posted encrypted $s$ is not associated with 
+the token $c$. 
 
 \item $\text{sign}(\SK, (c, s), m) \to \text{sig}$:
 Signs a message $m$ indicating that the token $c$ is spent.
 
 \item $\text{verify}(c, m, \text{sig}) \to \{\text{yes},\text{no}\}:$
-Verifier that a signature $\text{sig}$ on token $c$ is valid.
+Verify that a signature $\text{sig}$ on token $c$ is valid.
 \end{itemize}
 
 Informal security properties: 
 (1) $c$ and $\text{sig}$ should reveal nothing about $\PK$,
-(2) without $\SK$: existential unforgeability under a 
+(2) without $\SK$ we have existential unforgeability under a 
 (one-time) chosen message attack.
 
 
@@ -53,7 +54,7 @@ Informal security properties:
 
 From here we use the following notations:
 $\lambda$ is the security parameter (e.g., $\lambda = 128$), 
-$\range{\ell}$ denotes the set of integers $\{0,1,\ldots,\ell-1\}$ and 
+$\range{\ell}$ denotes the set of integers $\{0,1,\ldots,\ell-1\}$, and 
 $\primes$ is a set of size $2^\lambda$ 
 containing the smallest $2^\lambda$ odd primes. 
 %
@@ -63,37 +64,38 @@ random generators of $\GG$ where the discrete-log of $g$ base $h$ is unknown.
 
 \subsection{Proving knowledge of the factorization of a hidden integer}
 
-We first develop a zero knowledge protocol for proving
-knowledge of the factorization of an integer $n$ given
-as a commitment to $n$.
-We let $N$ be a known upper bound on $n$, so that $n \in \range{N}$.
-For simplicity we will also assume that $\abs{\GG} < N$. 
-The given commitment to $n$ is $c \deq g^n \cdot h^s \in \GG$,
-where $s \rgets \range{N}$.
+Let $n \in \range{N}$ be a secret integer 
+where $N$ is a public upper bound on~$n$.
+For simplicity we will also assume that $\abs{\GG} < N$.
+Let $c \deq g^n \cdot h^s \in \GG$ be a commitment to $n$, 
+where $s \rgets \range{N}$.  
+We first develop a zero knowledge protocol for proving knowledge of the
+factorization of~$n$ given only $c$. 
+
 
 To prove knowledge of the factorization of $n$ the prover
 proves knowledge of a $w \in \range{N}$ such that $w^2 \equiv t \pmod{n}$
 for some small public prime $t \in \ZZ$, namely $2 \leq t \leq \lambda$.
 That is, we provide a ZKPK for the relation
 \begin{equation} \label{eq:lang}
-  {\cal R} \deq \left\{ \Bigl( (c, t) \in \GG \times \range{\lambda},\ \ 
+  {\cal R}_{g,h} \deq \left\{ \Bigl( (c, t) \in \GG \times \range{\lambda},\ \ 
                               (n, s, w, a) \in \range{N}^4 \Bigr)  \ \ 
         \text{s.t.}\ \ 
                 \begin{split}
                         c   & = g^n \cdot h^s \ \ \text{in $\GG$}, \\
                         w^2 & = t + a \cdot n \ \ \text{in $\ZZ$}, \\
-                        t   & \ \textrm{a prime}
+                        2 & \leq t \leq \lambda  \ \textrm{a prime}
                 \end{split}  \right\}.
 \end{equation}
-Here $(c, t)$ is the statement and $(n, s, w, a)$ is the witness.
-The integer relation $w^2 = t + a n$ proves that 
+Here $(c, t)$ is a statement and $(n, s, w, a)$ is a witness.
+The integer relation $w^2 = t + a\cdot n$ proves that 
 $w^2 \equiv t \pmod{n}$, as required.
 We note that a ZKPK for~\eqref{eq:lang} proves that $t \in \ZZ$ is a quadratic
 residue modulo the committed $n$.  Leaking this bit of information about $n$
 does not interfere with the application to a secure air drop.
 
 \medskip\noindent
-The ZKPK protocol for~\eqref{eq:lang} 
+Protocol $\prot{P}$: The ZKPK protocol for~\eqref{eq:lang} 
 between the prover $P$ and the verifier $V$ works as follows:
 \begin{itemize}
 \item input:  the verifier has $(c, t) \in \GG \times \range{\lambda}$ and 
@@ -142,15 +144,15 @@ It sends $(c_1, \Rv)$ to the verifier.
 
 \item The verifier chooses challenges $\mathit{ch} \rgets \range{2^\lambda}$
 and $\ell \rgets \primes$. \\
-It sends $(\mathit{ch}, \ell)$ to the prover.
+It sends $(\ell, \mathit{ch})$ to the prover.
 
 \item The prover computes:
-\[  \xv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^7, \quad
-    \zv_\ell \gets (\xv \bmod \ell) \in \range{\ell}^7, \quad
-    \zv_q \gets \lfloor \xv / \ell \rfloor \in \ZZ^7, \quad
+\[  \zv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^7, \quad
+    \zv_\ell \gets (\zv \bmod \ell) \in \range{\ell}^7, \quad
+    \zv_q \gets \lfloor \zv / \ell \rfloor \in \ZZ^7, \quad
     \Zv_q \gets \phi(\zv_q)  
 \]
-and sends $(\Zv_q, \zv_\ell) \in \GG^3 \times \ZZ \times \range{\ell}^7$ 
+and sends $(\Zv_q, \zv_\ell) \in (\GG^3 \times \ZZ) \times \range{\ell}^7$ 
 to the verifier. 
 
 \item The verifier accepts if 
@@ -171,10 +173,122 @@ $\{1, -1, n, -n\}$, and that results in a longer proof.
 We need to prove the protocol above is zero-knowledge and a 
 proof of knowledge. 
 
-\paragraph{Proof of zero-knowledge.}
+\begin{theorem}
+Protocol $\prot{P}$ is a zero-knowledge protocol
+for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang}.
+\end{theorem}
+
+\begin{proof}
+
+\end{proof}
 
 
-\paragraph{Proof of extractability.}
+We say that ${\cal G}$ is an honest instance
+generator for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}
+if it chooses some integers $n, s, t$, and outputs $(c, t)$ where
+$c = g^n h^s \in \GG$. 
+
+\begin{theorem}
+Protocol $\prot{P}$ is an argument of knowledge
+for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang} with negligible
+soundness error for instances $(c,t)$ generated by an honest instance
+generator ${\cal G}$,
+when $\GG$ is a modeled as a generic group of unknown order. 
+\end{theorem}
+
+\begin{proof}
+We construct an extractor that given an instance $(c,t)$ 
+generated by ${\cal G}$,
+interacts with a convincing prover and outputs a witness $(n, s, w, a)$ 
+for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}. 
+The protocol transcript is $(c_1, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$.
+The extractor rewinds the prover and obtains two
+accepting conversations
+${\cal T}_1 \deq (c_1, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$
+and 
+${\cal T}_2 \deq (c_1, \Rv, \ell, \mathit{ch}', \Zv_q', \zv_\ell')$.
+Dividing the corresponding verification equations one by the other
+we obtain
+\[   (\Zv_q / \Zv_q')^\ell \cdot \phi(\zv_\ell - \zv_\ell') = 
+          T^{\mathit{ch} - \mathit{ch}'}. \]
+Let $\zv_\ell - \zv_\ell' = \Big(\Delta w,\ \Delta \mathit{w2},\ \Delta \mathit{s1},\ \Delta a,\ \Delta \mathit{an},\ \Delta \mathit{s1w},\ \Delta \mathit{sa} \Big) \in \ZZ^7$ and let $\Delta \mathit{ch} = \mathit{ch} - \mathit{ch}' \in \ZZ$.
+Then plugging this into the definition of $\phi$ we obtain
+\begin{equation} \label{eq:messy}
+      (\Zv_q / \Zv_q')^\ell \cdot
+      \Bigl(\ 
+       g^{\Delta w} \cdot h^{\Delta \mathit{s1}},\ \ \ 
+       g^{\Delta \mathit{w2}} \cdot h^{\Delta \mathit{s1w}} / c_1^{\Delta w},\ \ \ 
+       g^{\Delta \mathit{an}} \cdot h^{\Delta \mathit{sa}} / c^{\Delta a},\ \ \ 
+       \Delta \mathit{w2} - \Delta \mathit{an}\ \Bigr)
+          = (c_1, 1, 1, t)^{\Delta \mathit{ch}}.
+\end{equation}
+Let $\Zv_q / \Zv_q' = (z_1,z_2,z_3,z_4)$ 
+where $z_1,z_2,z_3 \in \GG$ and $z_4 \in \ZZ$.  
+In a generic group $\GG$, the group elements $z_1,z_2,z_3$ 
+must satisfy $z_i = g^{\alpha_i} h^{\beta_i} c^{\gamma_i} \prod_{j=1}^m g_j^{\delta_{i,j}}$
+for $i=1,2,3$, 
+and $c_1 = g^{\alpha} h^{\beta} c^\gamma \prod_{j=1}^m g_j^{\delta_{j}}$,
+where the extractor knows all the listed integer exponents.
+Here $g_1,\ldots,g_m$ are random group elements produced in response
+to a generic group oracle query for a random group element. 
+
+It now folows from~\eqref{eq:messy}, and from $c = g^n h^s$, 
+and by uniquness of representation in generic groups,
+that the following equations must hold over the integers:
+\begin{align*}
+  \ell \cdot (\alpha_1 + n \cdot \gamma_1) + \Delta w & = (\alpha + n \cdot \gamma) \cdot \Delta \mathit{ch},  &
+  \ell \cdot (\beta_1 + s \cdot \gamma_1) + \Delta \mathit{s1} & = (\beta + s \cdot \gamma) \cdot \Delta \mathit{ch}  
+\\
+  \ell \cdot (\alpha_2 + n \cdot \gamma_2) + \Delta \mathit{w2} & = (\alpha + n \cdot \gamma) \cdot \Delta w,  &
+  \ell \cdot (\beta_2 + s \cdot \gamma_2) + \Delta \mathit{s1w} & = (\beta + s \cdot \gamma) \cdot \Delta w   
+\\
+  \ell \cdot (\alpha_3 + n \cdot \gamma_3) + \Delta \mathit{an} & = n \cdot \Delta a,  & 
+  \ell \cdot (\beta_3 + s \cdot \gamma_3) + \Delta \mathit{sa} & = s \cdot \Delta a   
+\\
+  \ell \cdot z_4 + \Delta \mathit{w2} - \Delta \mathit{an} & = t \cdot \Delta \mathit{ch} 
+\end{align*}
+The extractor knows all these values except for $n$ and $s$.
+Reducing these equations modulo $\ell$ gives:
+\begin{align}
+  \Delta w & \equiv (\alpha + n \cdot \gamma) \cdot \Delta \mathit{ch}  &
+  \Delta \mathit{s1} & \equiv (\beta + s \cdot \gamma) \cdot \Delta \mathit{ch}  & \pmod{\ell} 
+\label{eq:first} \\
+  \Delta \mathit{w2} & \equiv (\alpha + n \cdot \gamma) \cdot \Delta w  &
+  \Delta \mathit{s1w} & \equiv (\beta + s \cdot \gamma) \cdot \Delta w   & \pmod{\ell} 
+\label{eq:second} \\
+  \Delta \mathit{an} & \equiv n \cdot \Delta a  & 
+  \Delta \mathit{sa} & \equiv s \cdot \Delta a   & \pmod{\ell} 
+\label{eq:third} \\
+  \Delta \mathit{w2} - \Delta \mathit{an} & = t \cdot \Delta \mathit{ch} 
+      &&& \pmod{\ell} 
+\label{eq:fourth} 
+\end{align}
+
+Consider the left equation in~\eqref{eq:first}
+and define $w \deq \alpha + n \cdot \gamma \in \ZZ$.
+For any pair of accepting conversations such as $({\cal T}_1, {\cal T}_2)$,
+it must be the case that 
+$\Delta w \equiv w \cdot \Delta \mathit{ch} \pmod{\ell}$.
+The extractor knows $\Delta w$ and $\Delta \mathit{ch}$.
+Hence, by constructing a polynomial number of such accepting transcript pairs, 
+the extractor can recover $w \in \ZZ$ using the chinese remainder theorem. 
+%In the same way, the extractor can recover 
+%$s_1 \deq \beta + s \cdot \gamma \in \ZZ$  
+%from the right equation in~\eqref{eq:first}.
+
+Next, consider the left equation in~\eqref{eq:second}.
+Using $w = \alpha + n \cdot \gamma$ and
+$\Delta w \equiv w \cdot \Delta \mathit{ch} \pmod{\ell}$ gives
+$\Delta \mathit{w2} \equiv w^2 \cdot \Delta \mathit{ch} \pmod{\ell}$.
+
+Using $\Delta \mathit{w2} \equiv w^2 \cdot \Delta \mathit{ch} \pmod{\ell}$
+in~\eqref{eq:fourth}
+gives $\Delta \mathit{an} \equiv (w^2 - t) \cdot \Delta \mathit{ch} \pmod{\ell}$. 
+Finally, the left equality in~\eqref{eq:third} 
+gives $(w^2 - t)\cdot \Delta \mathit{ch} \equiv n \cdot \Delta a \pmod{\ell}$. 
+
+\end{proof}
+
 
 
 
