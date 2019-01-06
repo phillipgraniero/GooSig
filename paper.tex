@@ -98,7 +98,7 @@ random generators of $\GG$ where the discrete-log of $g$ base $h$ is unknown.
 
 Let $n \in \range{N}$ be a secret integer 
 where $N$ is a public upper bound on~$n$.
-For simplicity we will also assume that $\abs{\GG} < N/2^{2 \lambda}$.
+We will also assume that $N > \abs{\GG} \cdot 2^{2 \lambda}$.
 Let $c \deq g^n \cdot h^s \in \GG$ be a commitment to $n$, 
 where $s \rgets \range{N}$.  
 We first develop a zero knowledge protocol for proving knowledge of the
@@ -199,19 +199,31 @@ $\GG^4 \times \ZZ$.
 \end{enumerate}
 \end{itemize}
 
+
 \paragraph{Comment 1.}
+The protocol is insecure if the group $\GG$ contains a non-identity
+element of known order.  In the multiplicative group $(\ZZ/n)^*$ the
+element $-1$ has order~$2$, and hence the protocol is insecure in this
+group.  Instead, we can work in the quotient group $(\ZZ/n)/\{\pm 1\}$, 
+where elements are represented as integers in the interval $[1,n/2]$
+and the product of $x$ and $y$ is defined as 
+$\abs{x \cdot y} = \min(z, n-z)$ where $z = (x \cdot y \bmod n)$.
+In this group $-1$ is the same as $1$, and presumably there are
+no other known elements of known order.
+
+\paragraph{Comment 2.}
 The commitment $c_2$ to the integer $a$ is necessary for soundness,
 and in particular to ensure that $a$ is an integer.  If $c_2$ along
 with $s_2$ and the second coordinate of $\phi$ are eliminated then there
 is an attack where an adversarial prover can prove knowledge of
 $(\sqrt{3} \bmod n)$ using $a = 1/n$ and $w = 2$.
 
-\paragraph{Comment 2.}
+\paragraph{Comment 3.}
 There is a seemingly simpler method to prove that one knows the
 factorization of~$n$, namely, prove that one knows $p$ such that $p$
 divides $n$.  That is, instead of committing to $w$ we would commit to
-$p$ and then prove that the committed value divides $n$. But we would
-also need to prove that the committed factor is not one of 
+$p$ and $q$ and then prove that $p \cdot q = n$. But we would
+also need to prove that the committed $p$ is not one of 
 $\{1, -1, n, -n\}$, and that results in a longer proof.
 
 \paragraph{Proof of security.}
@@ -232,7 +244,7 @@ $\mathit{ch} \rgets \range{2^\lambda}$, \AlgSep
 choose random $\zv_\ell \rgets \range{\ell}^8$ 
 and random $Z_1,Z_2,Z_3,Z_4 \rgets \GG$ \AlgSep
 choose $r_\text{w2}, r_\text{an} \rgets \range{N}$ and
-set $Z_5 \gets \lfloor (r_\text{w2} - r_\text{an}) / \ell \rfloor \in \ZZ$, \AlgSep
+set $Z_5 \gets \lfloor (t \cdot \mathit{ch} + r_\text{w2} - r_\text{an}) / \ell \rfloor \in \ZZ$, \AlgSep
 set $\Zv_q \deq (Z_1, Z_2, Z_3, Z_4, Z_5) \in \GG^4 \times \ZZ$, \AlgSep
 compute $\Rv \deq \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$. 
 \end{alg}
@@ -253,32 +265,63 @@ in $\range{\ell}^8$, as in the simulation.
 It also follows that $Z_1,Z_2,Z_3,Z_4 \in \GG$ are statistically close to 
 uniform in $\GG$ because each of these four terms is randomized by
 a fresh uniform randomizer,
-$r_\text{s1}, r_\text{s2}, r_\text{w}, r_\text{a} \in \range{\,\abs{\GG}\,}$ respectively. 
+$h^{\lfloor r_\text{s1} / \ell \rfloor}, h^{\lfloor r_\text{s2} / \ell \rfloor}, h^{\lfloor r_\text{s1w} / \ell \rfloor}, h^{\lfloor r_\text{sa} / \ell \rfloor} \in \GG$ respectively. 
 Hence, these values are distributed as in
 the simulation.
 It remains to argue that $Z_5$ is simulated correctly. 
 In the real protocol $Z_5$ is equal to
-$\lfloor (t \cdot \mathit{ch} + r_\text{w2} - r_\text{an})/\ell \rfloor \in \ZZ$
-plus or minus one.
-Note that $(t \cdot \mathit{ch})/\ell$ is negligibly small compared
-to $(r_\text{w2} - r_\text{an})/\ell$.
-Hence, because in the real transcript $r_\text{w2}$ and $r_\text{an}$ 
-are fresh uniform values in $\range{N}$, this $Z_5$ is distributed 
+$\lfloor (t \cdot \mathit{ch} + r_\text{w2} - r_\text{an})/\ell \rfloor \in \ZZ$,
+possibly plus or minus one.
+Hence, because in the real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
+and $\lfloor r_\text{an} / \ell \rfloor$ 
+are fresh uniform values in $\range{N/\ell}$, this $Z_5$ is distributed 
 statistically close to its distribution in the simulation.
 \end{proof}
 
+An optimization: the transcript elements $Z_3, Z_4 \in \GG$ can be simulated
+in a similar fashion to how we simulated $Z_5$ in the proof above.
+That is, 
+$Z_3 = g^{\lfloor r_\text{w2} / \ell \rfloor} h^{\lfloor r_\text{s1w} / \ell \rfloor} / c_1^{\lfloor r_\text{w} / \ell \rfloor} \in \GG$
+and 
+$Z_4 = g^{\lfloor r_\text{an} / \ell \rfloor} h^{\lfloor r_\text{sa} / \ell \rfloor} / c^{\lfloor r_\text{a} / \ell \rfloor} \in \GG$,
+where 
+$r_\text{w}, r_\text{w2}, r_\text{a}, r_\text{an}, r_\text{s1w}, r_\text{sa}$
+are chosen uniformly in $\range{N}$. 
+It is not difficult to see that these $Z_3$ and $Z_4$ 
+are distributed as in a real transcript.
+This method of simulation can be used to make the protocol slightly more
+efficient because the randomizers 
+$r_\text{w}, r_\text{w2}, r_\text{a}, r_\text{an}, r_\text{s1w}, r_\text{sa} \in \ZZ$
+do not need to be uniform in the entire interval $\range{N}$.
+It suffices to choose these six values 
+uniformly in $\range{2^{2 \lambda}}$, which is a smaller interval
+than $\range{N}$.  Only $r_\text{s1}$ and $r_\text{s2}$ need to be chosen
+uniformly in the full interval $\range{N}$ so that $Z_1$ and $Z_2$ are uniform
+in $\GG$. 
+However, if the simulator chooses $c_1, c_2 \in \GG$ randomly in $\GG$
+so that it knows
+their $\ell$-th root, then even $Z_1$ and $Z_2$ can also be simulated as above.
+Then $r_\text{s1}$ and $r_\text{s2}$ can also be chosen uniformly
+in the range $\range{2^{2 \lambda}}$.
+In other words, the simulator works by first 
+choosing a random $\rv \gets \range{2^{2\lambda}}^8$,
+computing $\Rv \gets \phi(\rv)$, and then
+solving for $\Zv_q \in \GG^4 \times \ZZ$. 
 
-We say that ${\cal G}$ is an honest instance
-generator for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}
+
+\begin{definition}
+We say that algorithm ${\cal G}$ is an \defn{honest instance
+generator} for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}
 if it chooses integers $n, s, t$, and outputs $(c, t)$ where
 $c \deq g^n h^s \in \GG$. 
+\end{definition}
 
 \begin{theorem}
 Protocol $\prot{P}$ is an argument of knowledge
-for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang} with negligible
-soundness error for instances $(c,t)$ generated by an honest instance
+for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang} 
+for instances $(c,t)$ generated by an honest instance
 generator ${\cal G}$,
-when $\GG$ is a modeled as a generic group of unknown order. 
+when the group $\GG$ is a modeled as a generic group of unknown order. 
 \end{theorem}
 
 \begin{proof}
@@ -453,7 +496,8 @@ residue in $\ZZ_n$.
            $c_2 \gets g^a \cdot h^{s_2} \in \GG$.
 
 \item choose a random $\rv \rgets \range{N}^8$
-and compute $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$.
+and compute $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$,
+where $\phi$ is the homomrphism defined in~\eqref{eq:hom}. 
 
 \item compute $\mathit{seed} \gets \text{Hash}(m, \GG, g, h, c, c_1, c_2, t, \Rv$).
 
@@ -497,15 +541,6 @@ Since $\ell$ is
 
 
 
-\paragraph{Comments.}
-This scheme is only secure is a group where there are no known
-elements of low order.  The group $\ZZ/n$ is not such a group because
-of the element $-1$ of order $2$.  To eliminate this element we work
-in the quotient group $(\ZZ/n)/\{\pm 1\}$, representing elements as
-$\abs{x} = \min(x, n - x)$.  In this group $-1$ is the same as $1$,
-and presumably there are no other known elements of known order.
-
-
 \paragraph{Proof of security.}
 We need to prove two things: 
 (1) privacy in the random oracle model:
@@ -518,17 +553,19 @@ some message $m' \neq m$ can be used to compute $\sqrt{t} \in \ZZ_n$
 for some $2 \leq t \leq 1000$. 
 
 \paragraph{Proof of privacy.}
-TODO: Use the ZK proof of the interactive protocol. 
+TODO: Use the ZK proof of the interactive protocol. Easy corrolary.
 
 
 \paragraph{Proof of security.}
-TODO: Use the extractor of the interactive protocol. 
+TODO: Use the extractor of the interactive protocol. Easy corrolary.
  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{A private air drop to ElGamal public keys}
 
+TODO: needs to be written.  Maybe put this first because it is so much
+simpler?
 
 
 \bibliographystyle{alpha}
