@@ -42,7 +42,7 @@ Signs a message $m$ indicating that the token $c$ is spent.
 Verify that a signature $\text{sig}$ on token $c$ is valid.
 \end{itemize}
 
-Informal security properties: 
+TODO: Need to state security properties formally: 
 (1) $c$ and $\text{sig}$ should reveal nothing about $\PK$,
 (2) without $\SK$ we have existential unforgeability under a 
 (one-time) chosen message attack.
@@ -50,6 +50,9 @@ Informal security properties:
 
 \subsection{Zero-knowledge proofs in generic groups}
 
+TODO: Need overview of zero-knowledge in generic groups. 
+
+\paragraph{The representation extraction lemma.}
 Let $\adv$ be an algorithm that outputs 
 a generic group element $u \in \GG$.
 The following lemma shows that there is an extractor that
@@ -57,7 +60,7 @@ can extract from $\adv$ an integer representation of $u$
 relative to a supplied set of group generators.
 Moreover, this integer representation is unique.
 
-\begin{lemma}[Uniqueness of representation in generic groups]
+\begin{lemma}[Unique representation extraction in generic groups]
 \label{lem:unique}
 Let $\adv_1, \adv_2$ be two randomized algorithms that interact
 with generic group oracles for the group $\GG$ and 
@@ -66,8 +69,8 @@ Suppose that each algorithm makes at most $q$ type-1 queries
 and let $g_1,\ldots,g_q \in \GG$ be the returned random group elements. 
 
 There is an extractor $\bdv$ that emulates 
-the generic group oracles for $\adv_1$ and $\adv_2$, 
-and for $i=1,2$ when $\bdv$ interacts with $\adv_i$ 
+the generic group oracles for $\adv_1$ and $\adv_2$
+such that for $i=1,2$ when $\bdv$ interacts with $\adv_i$ 
 the following holds with overwhelming probability:
 if $\adv_i$ outputs $u_i \in \GG$ 
 then the extractor $\bdv_i$ outputs a representation
@@ -136,7 +139,7 @@ the prover has $(c, t, n, s, w, a) \in \GG \times \range{N}^5$
 \item Next, define a homomorphism $\phi:\ZZ^8 \to \GG^4 \times \ZZ$ 
 parameterized by $g, h, c, c_1, c_2$ as follows:
 \begin{equation} \label{eq:hom}
-  \phi\left(\!\!\!\begin{array}{l}
+  \phi\left(\!\!\begin{array}{l}
                 w, \mathit{w2}, s_1, a, \\
                 \mathit{an}, \mathit{s1w}, \mathit{sa}, s_2
       \end{array}  \!\!\!\right) \deq
@@ -224,11 +227,13 @@ for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang}.
 The simulator takes $(c, t)$ as input and outputs the simulated transcript
 $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$ as follows:
 \begin{alg}
-choose random $c_1, c_2 \rgets \GG$ and $\ell \rgets \primes$, 
-$\mathit{ch} \rgets \range{2^\lambda}$, \\
-choose random $\zv_\ell \rgets \range{\ell}^8$, \\
-choose random $Z_1,Z_2,Z_3,Z_4 \rgets \GG$,\  $Z_5 \rgets \range{N}$,\ 
-and set $\Zv_q \deq (Z_1, Z_2, Z_3, Z_4, Z_5) \in \GG^4 \times \ZZ$, \\
+choose random $c_1, c_2 \rgets \GG,\ \ \ell \rgets \primes$, and
+$\mathit{ch} \rgets \range{2^\lambda}$, \AlgSep
+choose random $\zv_\ell \rgets \range{\ell}^8$ 
+and random $Z_1,Z_2,Z_3,Z_4 \rgets \GG$ \AlgSep
+choose $r_\text{w2}, r_\text{an} \rgets \range{N}$ and
+set $Z_5 \gets \lfloor (r_\text{w2} - r_\text{an}) / \ell \rfloor \in \ZZ$, \AlgSep
+set $\Zv_q \deq (Z_1, Z_2, Z_3, Z_4, Z_5) \in \GG^4 \times \ZZ$, \AlgSep
 compute $\Rv \deq \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$. 
 \end{alg}
 We show the simulated transcript is distributed statistically close
@@ -242,13 +247,24 @@ Consider one value $r \rgets \range{N}$.
 Because $N$ is much larger than $\ell \cdot \abs{\GG}$
 we know that the pair 
 $\big((\lfloor r/\ell \rfloor \bmod \abs{\GG}),\ (r \bmod \ell) \big)$
-is statistically close to uniform in $\range{\abs{\GG}} \times \range{\ell}$.
-It follows that $\zv_\ell$ is statistically close to uniform 
-in $\range{\ell}^8$ and 
-$Z_1,Z_2,Z_3,Z_4 \in \GG$ are statistically close to uniform in $\GG$, 
-as in the simulation.
+is statistically close to uniform in $\range{\,\abs{\GG}\,} \times \range{\ell}$.
+It directly follows that $\zv_\ell$ is statistically close to uniform 
+in $\range{\ell}^8$, as in the simulation.
+It also follows that $Z_1,Z_2,Z_3,Z_4 \in \GG$ are statistically close to 
+uniform in $\GG$ because each of these four terms is randomized by
+a fresh uniform randomizer,
+$r_\text{s1}, r_\text{s2}, r_\text{w}, r_\text{a} \in \range{\,\abs{\GG}\,}$ respectively. 
+Hence, these values are distributed as in
+the simulation.
 It remains to argue that $Z_5$ is simulated correctly. 
-
+In the real protocol $Z_5$ is equal to
+$\lfloor (t \cdot \mathit{ch} + r_\text{w2} - r_\text{an})/\ell \rfloor \in \ZZ$
+plus or minus one.
+Note that $(t \cdot \mathit{ch})/\ell$ is negligibly small compared
+to $(r_\text{w2} - r_\text{an})/\ell$.
+Hence, because in the real transcript $r_\text{w2}$ and $r_\text{an}$ 
+are fresh uniform values in $\range{N}$, this $Z_5$ is distributed 
+statistically close to its distribution in the simulation.
 \end{proof}
 
 
@@ -284,23 +300,24 @@ Let $\zv_\ell - \zv_\ell' = \Big(\Delta w,\ \Delta \mathit{w2},\ \Delta \mathit{
 Then plugging this into the definition of $\phi$ we obtain
 \begin{equation} \label{eq:messy}
       (\Zv_q / \Zv_q')^\ell \cdot
-      \Bigl(\ 
+      \left(\begin{array}{l}
        g^{\Delta w} \cdot h^{\Delta \mathit{s1}},\ \ \ 
        g^{\Delta a} \cdot h^{\Delta \mathit{s2}},\ \ \ 
-       g^{\Delta \mathit{w2}} \cdot h^{\Delta \mathit{s1w}} / c_1^{\Delta w},\ \ \ 
+       g^{\Delta \mathit{w2}} \cdot h^{\Delta \mathit{s1w}} / c_1^{\Delta w}, \\
        g^{\Delta \mathit{an}} \cdot h^{\Delta \mathit{sa}} / c^{\Delta a},\ \ \ 
-       \Delta \mathit{w2} - \Delta \mathit{an}\ \Bigr)
-          = (c_1, c_2, 1, 1, t)^{\Delta \mathit{ch}}.
+       \Delta \mathit{w2} - \Delta \mathit{an}\ 
+       \end{array} \right)
+          = \left(\begin{array}{l}c_1, \ c_2, \ 1, \\ 1,\ t \end{array}\right)^{\Delta \mathit{ch}}.
 \end{equation}
 Let $\Zv_q / \Zv_q' = (z_1, z_2, z_3, z_4, z_5)$ 
 where $z_1, z_2, z_3, z_4 \in \GG$ and $z_5 \in \ZZ$.  
 In a generic group $\GG$, the group elements $z_1, z_2, z_3, z_4$ 
-must satisfy $z_i = g^{\alpha_i} h^{\beta_i} c^{\gamma_i} \prod_{j=1}^m g_j^{\delta_{i,j}}$
+must satisfy $z_i = g^{\alpha_i} h^{\beta_i} c^{\gamma_i} \prod_{j=1}^q g_j^{\delta_{i,j}}$
 for $i=1,2,3,4$, 
-and $c_1 = g^{\alpha} h^{\beta} c^\gamma \prod_{j=1}^m g_j^{\delta_{j}}$,
-and $c_2 = g^{\alpha_0} h^{\beta_0} c^\gamma \prod_{j=1}^m g_j^{\delta_{0,j}}$,
+and $c_1 = g^{\alpha} h^{\beta} c^\gamma \prod_{j=1}^q g_j^{\delta_{j}}$,
+and $c_2 = g^{\alpha_0} h^{\beta_0} c^\gamma \prod_{j=1}^q g_j^{\delta_{0,j}}$,
 where the extractor knows all the listed integer exponents.
-Here $g_1,\ldots,g_m$ are random group elements produced in response
+Here $g_1,\ldots,g_q \in \GG$ are random group elements produced in response
 to a generic group oracle query for a random group element. 
 
 It now follows from~\eqref{eq:messy}, and from $c = g^n h^s$, 
@@ -341,21 +358,16 @@ Reducing these equations modulo $\ell$ gives:
 \label{eq:fourth} 
 \end{align}
 
-Consider the left equation in~\eqref{eq:first}
-and define $w \deq \alpha + n \cdot \gamma \in \ZZ$.
+Consider the left equalities in~\eqref{eq:first} and~\eqref{eq:firsta}.
+Define $w \deq \alpha + n \cdot \gamma \in \ZZ$ 
+and $a \deq \alpha_0 + n \cdot \gamma_0 \in \ZZ$.
 For any pair of accepting transcripts such as $({\cal T}_1, {\cal T}_2)$,
 it must be the case that 
-$\Delta w \equiv w \cdot \Delta \mathit{ch} \pmod{\ell}$.
-The extractor knows $\Delta w$ and $\Delta \mathit{ch}$.
+$\Delta w \equiv w \cdot \Delta \mathit{ch} \pmod{\ell}$ and
+$\Delta a \equiv a \cdot \Delta \mathit{ch} \pmod{\ell}$. 
+The extractor knows $\Delta w,\ \Delta a$, and $\Delta \mathit{ch}$.
 Hence, by constructing a polynomial number of such accepting transcript pairs, 
-the extractor can recover $w \in \ZZ$ using the chinese remainder theorem. 
-
-In exactly the same way, the extractor can recover 
-$a \deq \alpha_0 + n \cdot \gamma_0 \in \ZZ$  
-from the left equation in~\eqref{eq:firsta}.
-For any pair of accepting transcripts 
-it must be the case that 
-$\Delta a \equiv a \cdot \Delta \mathit{ch} \pmod{\ell}$.
+the extractor can recover $w, a \in \ZZ$ using the chinese remainder theorem. 
 
 Next, consider the left equation in~\eqref{eq:second}.
 Using $w = \alpha + n \cdot \gamma$ and
@@ -372,11 +384,18 @@ we obtain that the extracted integers $w$ and $a$ must satisfy
 $(w^2 - t)\cdot \Delta \mathit{ch} \equiv 
       n \cdot a \cdot \Delta \mathit{ch} \pmod{\ell}$.  
 Since $\ell$ does not divide $\Delta \mathit{ch}$ with overwhelming
-probability we obtain that $w^2 - t \equiv n \cdot a \pmod{\ell}$.
+probability, we obtain that $w^2 - t \equiv n \cdot a \pmod{\ell}$.
 Since this equality holds modulo a random $\ell \in \primes$ 
 with overwhelming probability, 
 the equality $w^2 - t = n \cdot a$ must hold over the integers,
-as required. 
+as required.   Note that this implies that $a \neq 0$. 
+
+Because $a \neq 0$, the extractor can obtain $(n \bmod \ell)$
+from the left equality in~\eqref{eq:third}, and thus extract $n \in \ZZ$ by
+repeating over several $\ell$.  Similarly, it can extract $s \in \ZZ$ from
+the right equality in~\eqref{eq:third}.   
+It thus obtains a witness $(n, s, w, a)$ 
+for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}, as required.
 \end{proof}
 
 
@@ -430,38 +449,41 @@ residue in $\ZZ_n$.
 \item choose a random $s_1 \rgets \range{N}$ and compute
            $c_1 \gets g^w \cdot h^{s_1} \in \GG$.
 
-\item choose a random $\rv \rgets \range{N}^7$
-and compute $\Rv \gets \phi(\rv) \in \GG^3 \times \ZZ$.
+\item choose a random $s_2 \rgets \range{N}$ and compute
+           $c_2 \gets g^a \cdot h^{s_2} \in \GG$.
 
-\item compute $\mathit{seed} \gets \text{Hash}(m, \GG, g, h, c, c_1, t, \Rv$).
+\item choose a random $\rv \rgets \range{N}^8$
+and compute $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$.
+
+\item compute $\mathit{seed} \gets \text{Hash}(m, \GG, g, h, c, c_1, c_2, t, \Rv$).
 
 \item
 use a $\text{PRNG}(\mathit{seed})$ to generate $(\mathit{ch}, \ell)$, 
 where $\mathit{ch} \in \range{2^\lambda}$ and $\ell \in \primes$.
 
 \item compute:
-\[  \xv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^7, \quad
-    \zv_\ell \gets (\xv \bmod \ell) \in \range{\ell}^7, \quad
-    \zv_q \gets \lfloor \xv / \ell \rfloor \in \ZZ^7, \quad
-    \Zv_q \gets \phi(\zv_q) \in \GG^3 \times \ZZ.
+\[  \xv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^8, \quad
+    \zv_\ell \gets (\xv \bmod \ell) \in \range{\ell}^8, \quad
+    \zv_q \gets \lfloor \xv / \ell \rfloor \in \ZZ^8, \quad
+    \Zv_q \gets \phi(\zv_q) \in \GG^4 \times \ZZ.
 \]
 
 \item output the signature 
-$\mathit{sig} = (c_1, t, \mathit{ch}, \ell, \Zv_q, \zv_\ell)$.
+$\mathit{sig} = (c_1, c_2, t, \mathit{ch}, \ell, \Zv_q, \zv_\ell)$.
 \end{itemize}
 
 
 
 \paragraph{Algorithm $\text{verify}(c, m, \mathit{sig}):$}
-Verify that $\mathit{sig} = (c_1, t, \mathit{ch}, \ell, \Zv_q, \zv_\ell)$ 
+Verify that $\mathit{sig} = (c_1, c_2, t, \mathit{ch}, \ell, \Zv_q, \zv_\ell)$ 
 is a valid signature for token~$c$ on the message~$m$.
 \begin{itemize}
 \item reject if $t \notin \range{\lambda}$ or $t$ is not a prime.
 
-\item with $T \deq (c_1, 1, 1, t) \in \GG^3 \times \ZZ$, 
-compute $\Rv' \gets \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^3 \times \ZZ$.
+\item with $T \deq (c_1, c_2, 1, 1, t) \in \GG^4 \times \ZZ$, 
+compute $\Rv' \gets \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$.
 
-\item compute $\mathit{seed}' \gets \text{Hash}(m, \GG, g, h, c, c_1, t, \Rv'$)
+\item compute $\mathit{seed}' \gets \text{Hash}(m, \GG, g, h, c, c_1, c_2, t, \Rv'$)
 
 \item use a $\text{PRNG}(\mathit{seed}')$ to generate 
   $\mathit{ch}' \in \range{2^\lambda}$ and $\ell' \in \primes$. \\
@@ -486,16 +508,21 @@ and presumably there are no other known elements of known order.
 
 \paragraph{Proof of security.}
 We need to prove two things: 
-(1) privacy: there is a simulator that can generate a properly distributed
+(1) privacy in the random oracle model:
+there is a simulator that can generate a properly distributed
 signature just given $c$ and $m$, and 
-(2) security: an attacker that can generate a valid signature for $c$ using
+(2) security: an attacker that is given $c$ along with a 
+signature on some message $m$
+with respect to $c$ and can generate a valid signature for $c$ on
 some message $m' \neq m$ can be used to compute $\sqrt{t} \in \ZZ_n$
 for some $2 \leq t \leq 1000$. 
 
 \paragraph{Proof of privacy.}
+TODO: Use the ZK proof of the interactive protocol. 
 
 
 \paragraph{Proof of security.}
+TODO: Use the extractor of the interactive protocol. 
  
 
 
