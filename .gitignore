@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+paper.aux
+paper.out
+paper.pdf
+paper.log
