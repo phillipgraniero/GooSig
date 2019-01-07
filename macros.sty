@@ -70,6 +70,13 @@
 {\begin{quote}\begin{RawAlg}}
 {\end{RawAlg} \end{quote}}
 
+\makeatletter
+\newcommand\setcurrentlabel[1]{\def\@currentlabel{#1}}
+\makeatother
+
+% general line number, no stepping
+\newcommand{\nsgenlnum}[2]{\hspace*{-3ex}\hbox to 4ex{\hfill#1\,(\thelinecount)}#2\setcurrentlabel{\thelinecount #2}}
+
 % general line number, with stepping
 \newcommand{\genlnum}[2]{\refstepcounter{linecount}\nsgenlnum{#1}{#2}}
 
