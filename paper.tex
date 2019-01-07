@@ -141,14 +141,14 @@ parameterized by $g, h, c, c_1, c_2$ as follows:
 \begin{equation} \label{eq:hom}
   \phi\left(\!\!\begin{array}{l}
                 w, \mathit{w2}, s_1, a, \\
-                \mathit{an}, \mathit{s1w}, \mathit{sa}, s_2
+                \mathit{na}, \mathit{s1w}, \mathit{sa}, s_2
       \end{array}  \!\!\!\right) \deq
       \Bigl(\ 
        g^w \cdot h^{\mathit{s1}},\ \ \ 
        g^a \cdot h^{\mathit{s2}},\ \ \ 
        g^{\mathit{w2}} \cdot h^{\mathit{s1w}} / c_1^w,\ \ \ 
-       g^{\mathit{an}} \cdot h^{\mathit{sa}} / c^a,\ \ \ 
-       \mathit{w2} - \mathit{an}\ \Bigr)
+       g^{\mathit{na}} \cdot h^{\mathit{sa}} / c^a,\ \ \ 
+       \mathit{w2} - \mathit{na}\ \Bigr)
 \end{equation}
 It is easy to see that $\phi$ is a group homomorphism.
 The range of $\phi$ is the group $\GG^4 \times \ZZ$.  
@@ -161,7 +161,7 @@ then
 We need a ZKPK for a $\phi$-preimage of 
 $T \deq (c_1, c_2, 1, 1, t) \in \GG^4 \times \ZZ$. 
 In other words, we need a zero-knowledge proof of knowledge for a vector 
-$\vv' = (w', \mathit{w2}', s_1', a', \mathit{an}', 
+$\vv' = (w', \mathit{w2}', s_1', a', \mathit{na}', 
               \mathit{s1w}', \mathit{sa}', s_2') \in \ZZ^8$ 
 such that 
 \[   \phi(\vv') = T = (c_1, c_2, 1, 1, t) \in \GG^4 \times \ZZ.  \]
@@ -169,14 +169,14 @@ Doing so proves
 that $c_1$ is a commitment to $w' \in \ZZ$, 
 that $c_2$ is a commitment to $a' \in \ZZ$,
 that $\mathit{w2}' = (w')^2$, and 
-that $\mathit{an}' = a' \cdot n$ for some integer $a'$.
+that $\mathit{na}' = a' \cdot n$ for some integer $a'$.
 Then the last relation proves that $(w')^2 - a' \cdot n = t$ in $\ZZ$,
 as required. 
 
 We design a ZKPK for a $\phi$-preimage 
 using a zero-knowledge protocol from~\cite[\S 3.5]{ourpaper}:
 \begin{enumerate}
-\item The prover chooses a random $\rv \rgets \range{N}^8$
+\item The prover chooses a random $\rv \rgets \range{2^{2\lambda}}^8$
 and computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$. \\
 It sends $(c_1, c_2, \Rv)$ to the verifier.
 
@@ -239,59 +239,74 @@ for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang}.
 The simulator takes $(c, t)$ as input and outputs the simulated transcript
 $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$ as follows:
 \begin{alg}
-choose random $c_1, c_2 \rgets \GG,\ \ \ell \rgets \primes$, and
+choose random $\hat{c}_1, \hat{c}_2 \rgets \GG,\ \ \ell \rgets \primes$, and
 $\mathit{ch} \rgets \range{2^\lambda}$, \AlgSep
-choose random $\zv_\ell \rgets \range{\ell}^8$ 
-and random $Z_1,Z_2,Z_3,Z_4 \rgets \GG$ \AlgSep
-choose $r_\text{w2}, r_\text{an} \rgets \range{N}$ and
-set $Z_5 \gets \lfloor (t \cdot \mathit{ch} + r_\text{w2} - r_\text{an}) / \ell \rfloor \in \ZZ$, \AlgSep
-set $\Zv_q \deq (Z_1, Z_2, Z_3, Z_4, Z_5) \in \GG^4 \times \ZZ$, \AlgSep
-compute $\Rv \deq \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$. 
+set $c_1 \gets \hat{c}_1^\ell$ and $c_2 \gets \hat{c}_2^\ell$, \AlgSep
+choose random $\zv_\ell \rgets \range{\ell}^8$, \AlgSep
+choose random $\hat{\rv} \rgets \range{2^{2\lambda}}^8$
+and define $\hat{T} \deq \Big(\hat{c}_1^\mathit{ch}, \hat{c}_2^\mathit{ch}, 1, 1, \lfloor (t \cdot \mathit{ch})/\ell \rfloor\Big) \in \GG^4 \times \ZZ$, \AlgSep
+%and write $\hat{\rv} = \big(r_\text{w}, r_\text{w2}, r_\text{s1}, r_\text{a}, r_\text{na}, r_\text{s1w}, r_\text{sa}, r_\text{s2} \big)$
+set $\Zv_q \deq \hat{T} \cdot \phi(\lfloor \hat{\rv}/\ell \rfloor) \in \GG^4 \times \ZZ$, \AlgSep
+% \left(\begin{array}{l}
+% Z_1 \gets \hat{c}_1^\mathit{ch} \cdot g^{\lfloor r_\text{w}/\ell \rfloor} \cdot h^{\lfloor r_\text{s1}/\ell \rfloor} ,\quad
+% Z_2 \gets \hat{c}_2^\mathit{ch} \cdot g^{\lfloor r_\text{a}/\ell \rfloor} \cdot h^{\lfloor r_\text{s2}/\ell \rfloor} , \AlgSep
+% Z_3 \gets g^{\lfloor r_\text{w2}/\ell \rfloor} \cdot h^{\lfloor r_\text{s1w}/\ell \rfloor} / \hat{c}_1^{\lfloor r_\text{w}/\ell \rfloor},\quad
+% Z_4 \gets g^{\lfloor r_\text{na}/\ell \rfloor} \cdot h^{\lfloor r_\text{sa}/\ell \rfloor} / \hat{c}^{\lfloor r_\text{a}/\ell \rfloor}, \AlgSep
+% Z_5 \gets \lfloor (t \cdot \mathit{ch} + r_\text{w2} - r_\text{na})/\ell \rfloor 
+% \end{array}\right) \in \GG^4 \times \ZZ$, \AlgSep
+compute $\Rv \deq \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$, \AlgSep
+output $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$.
 \end{alg}
 We show the simulated transcript is distributed statistically close
 to an accepting transcript of a real protocol execution.
-First observe that $c_1, c_2, \Rv, \ell, \mathit{ch}$ are all distributed 
-as in a real transcript.  It remains to show that the same holds
+Because $\ell$ does not divide $\abs{\GG}$ with overwhelming probability,
+we know that $c_1$ and $c_2$ are uniform in $\GG$. 
+Hence, observe that $c_1, c_2, \Rv, \ell, \mathit{ch}$ are all distributed 
+exactly as in a real transcript.  It remains to show that the same holds
 for $\zv_\ell$ and $\Zv_q$. 
 In an interaction with a real prover 
-the vector $\rv$ is chosen uniformly in $\range{N}^8$.
-Consider one value $r \rgets \range{N}$.
-Because $N$ is much larger than $\ell \cdot \abs{\GG}$
+the vector $\rv$ is chosen uniformly in $\range{2^{2\lambda}}^8$.
+Consider one value $r \rgets \range{2^{2\lambda}}$.
+Because $2^{2\lambda}$ is much larger than $\ell$
 we know that the pair 
-$\big((\lfloor r/\ell \rfloor \bmod \abs{\GG}),\ (r \bmod \ell) \big)$
-is statistically close to uniform in $\range{\,\abs{\GG}\,} \times \range{\ell}$.
+$\big(\lfloor r/\ell \rfloor,\ (r \bmod \ell) \big)$
+is statistically close to uniform in $\range{2^{2\lambda}/\ell} \times \range{\ell}$.
 It directly follows that $\zv_\ell$ is statistically close to uniform 
 in $\range{\ell}^8$, as in the simulation.
-It also follows that $Z_1,Z_2,Z_3,Z_4 \in \GG$ are statistically close to 
-uniform in $\GG$ because each of these four terms is randomized by
-a fresh uniform randomizer,
-$h^{\lfloor r_\text{s1} / \ell \rfloor}, h^{\lfloor r_\text{s2} / \ell \rfloor}, h^{\lfloor r_\text{s1w} / \ell \rfloor}, h^{\lfloor r_\text{sa} / \ell \rfloor} \in \GG$ respectively. 
-Hence, these values are distributed as in
-the simulation.
-It remains to argue that $Z_5$ is simulated correctly. 
-In the real protocol $Z_5$ is equal to
-$\lfloor (t \cdot \mathit{ch} + r_\text{w2} - r_\text{an})/\ell \rfloor \in \ZZ$,
-possibly plus or minus one.
+It remains to argue that $\Zv_q \in \GG^4 \times \ZZ$ is simulated correctly. 
+Let's start with the last component of~$\Zv_q$, namely $Z_5 \in \ZZ$.  
+In a real transcript 
+$Z_5 \deq \lfloor (\mathit{w2} \cdot \mathit{ch} + r_\text{w2})/\ell \rfloor -
+          \lfloor (\mathit{na} \cdot \mathit{ch} + r_\text{na})/\ell \rfloor$.
+Therefore, because $\mathit{w2} - \mathit{na} = t$ we have
+\[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor + \Delta \]
+where $\Delta \in \{0, \pm 1, \pm 2\}$. 
 Hence, because in the real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
-and $\lfloor r_\text{an} / \ell \rfloor$ 
-are fresh uniform values in $\range{N/\ell}$, this $Z_5$ is distributed 
+and $\lfloor r_\text{na} / \ell \rfloor$ 
+are fresh uniform values in $\range{2^{2\lambda}/\ell}$, 
+as in the simulation, 
+this $Z_5$ is distributed 
 statistically close to its distribution in the simulation.
+Essentially the same argument shows that $Z_1, Z_2, Z_3, Z_4$ are
+also simulated correctly. 
+{\bf TODO:} explain why.
 \end{proof}
 
+\iffalse
 An optimization: the transcript elements $Z_3, Z_4 \in \GG$ can be simulated
 in a similar fashion to how we simulated $Z_5$ in the proof above.
 That is, 
 $Z_3 = g^{\lfloor r_\text{w2} / \ell \rfloor} h^{\lfloor r_\text{s1w} / \ell \rfloor} / c_1^{\lfloor r_\text{w} / \ell \rfloor} \in \GG$
 and 
-$Z_4 = g^{\lfloor r_\text{an} / \ell \rfloor} h^{\lfloor r_\text{sa} / \ell \rfloor} / c^{\lfloor r_\text{a} / \ell \rfloor} \in \GG$,
+$Z_4 = g^{\lfloor r_\text{na} / \ell \rfloor} h^{\lfloor r_\text{sa} / \ell \rfloor} / c^{\lfloor r_\text{a} / \ell \rfloor} \in \GG$,
 where 
-$r_\text{w}, r_\text{w2}, r_\text{a}, r_\text{an}, r_\text{s1w}, r_\text{sa}$
+$r_\text{w}, r_\text{w2}, r_\text{a}, r_\text{na}, r_\text{s1w}, r_\text{sa}$
 are chosen uniformly in $\range{N}$. 
 It is not difficult to see that these $Z_3$ and $Z_4$ 
 are distributed as in a real transcript.
 This method of simulation can be used to make the protocol slightly more
 efficient because the randomizers 
-$r_\text{w}, r_\text{w2}, r_\text{a}, r_\text{an}, r_\text{s1w}, r_\text{sa} \in \ZZ$
+$r_\text{w}, r_\text{w2}, r_\text{a}, r_\text{na}, r_\text{s1w}, r_\text{sa} \in \ZZ$
 do not need to be uniform in the entire interval $\range{N}$.
 It suffices to choose these six values 
 uniformly in $\range{2^{2 \lambda}}$, which is a smaller interval
@@ -307,7 +322,7 @@ In other words, the simulator works by first
 choosing a random $\rv \gets \range{2^{2\lambda}}^8$,
 computing $\Rv \gets \phi(\rv)$, and then
 solving for $\Zv_q \in \GG^4 \times \ZZ$. 
-
+\fi
 
 \begin{definition}
 We say that algorithm ${\cal G}$ is an \defn{honest instance
@@ -339,7 +354,7 @@ Dividing the corresponding verification equations one by the other
 we obtain
 \[   (\Zv_q / \Zv_q')^\ell \cdot \phi(\zv_\ell - \zv_\ell') = 
           T^{\mathit{ch} - \mathit{ch}'}. \]
-Let $\zv_\ell - \zv_\ell' = \Big(\Delta w,\ \Delta \mathit{w2},\ \Delta \mathit{s1},\ \Delta a,\ \Delta \mathit{an},\ \Delta \mathit{s1w},\ \Delta \mathit{sa},\ \Delta \mathit{s2} \Big) \in \ZZ^8$ and let $\Delta \mathit{ch} = \mathit{ch} - \mathit{ch}' \in \ZZ$.
+Let $\zv_\ell - \zv_\ell' = \Big(\Delta w,\ \Delta \mathit{w2},\ \Delta \mathit{s1},\ \Delta a,\ \Delta \mathit{na},\ \Delta \mathit{s1w},\ \Delta \mathit{sa},\ \Delta \mathit{s2} \Big) \in \ZZ^8$ and let $\Delta \mathit{ch} = \mathit{ch} - \mathit{ch}' \in \ZZ$.
 Then plugging this into the definition of $\phi$ we obtain
 \begin{equation} \label{eq:messy}
       (\Zv_q / \Zv_q')^\ell \cdot
@@ -347,8 +362,8 @@ Then plugging this into the definition of $\phi$ we obtain
        g^{\Delta w} \cdot h^{\Delta \mathit{s1}},\ \ \ 
        g^{\Delta a} \cdot h^{\Delta \mathit{s2}},\ \ \ 
        g^{\Delta \mathit{w2}} \cdot h^{\Delta \mathit{s1w}} / c_1^{\Delta w}, \\
-       g^{\Delta \mathit{an}} \cdot h^{\Delta \mathit{sa}} / c^{\Delta a},\ \ \ 
-       \Delta \mathit{w2} - \Delta \mathit{an}\ 
+       g^{\Delta \mathit{na}} \cdot h^{\Delta \mathit{sa}} / c^{\Delta a},\ \ \ 
+       \Delta \mathit{w2} - \Delta \mathit{na}\ 
        \end{array} \right)
           = \left(\begin{array}{l}c_1, \ c_2, \ 1, \\ 1,\ t \end{array}\right)^{\Delta \mathit{ch}}.
 \end{equation}
@@ -376,10 +391,10 @@ that the following equations must hold over the integers:
   \ell \cdot (\alpha_3 + n \cdot \gamma_3) + \Delta \mathit{w2} & = (\alpha + n \cdot \gamma) \cdot \Delta w,  &
   \ell \cdot (\beta_3 + s \cdot \gamma_3) + \Delta \mathit{s1w} & = (\beta + s \cdot \gamma) \cdot \Delta w   
 \\
-  \ell \cdot (\alpha_4 + n \cdot \gamma_4) + \Delta \mathit{an} & = n \cdot \Delta a,  & 
+  \ell \cdot (\alpha_4 + n \cdot \gamma_4) + \Delta \mathit{na} & = n \cdot \Delta a,  & 
   \ell \cdot (\beta_4 + s \cdot \gamma_4) + \Delta \mathit{sa} & = s \cdot \Delta a   
 \\
-  \ell \cdot z_4 + \Delta \mathit{w2} - \Delta \mathit{an} & = t \cdot \Delta \mathit{ch} 
+  \ell \cdot z_4 + \Delta \mathit{w2} - \Delta \mathit{na} & = t \cdot \Delta \mathit{ch} 
 \end{align*}
 The extractor knows all these values except for $n$ and $s$.
 Reducing these equations modulo $\ell$ gives:
@@ -393,10 +408,10 @@ Reducing these equations modulo $\ell$ gives:
   \Delta \mathit{w2} & \equiv (\alpha + n \cdot \gamma) \cdot \Delta w  &
   \Delta \mathit{s1w} & \equiv (\beta + s \cdot \gamma) \cdot \Delta w   & \pmod{\ell} 
 \label{eq:second} \\
-  \Delta \mathit{an} & \equiv n \cdot \Delta a  & 
+  \Delta \mathit{na} & \equiv n \cdot \Delta a  & 
   \Delta \mathit{sa} & \equiv s \cdot \Delta a   & \pmod{\ell} 
 \label{eq:third} \\
-  \Delta \mathit{w2} - \Delta \mathit{an} & \equiv t \cdot \Delta \mathit{ch} 
+  \Delta \mathit{w2} - \Delta \mathit{na} & \equiv t \cdot \Delta \mathit{ch} 
       &&& \pmod{\ell} 
 \label{eq:fourth} 
 \end{align}
@@ -419,7 +434,7 @@ $\Delta \mathit{w2} \equiv w^2 \cdot \Delta \mathit{ch} \pmod{\ell}$.
 
 Using $\Delta \mathit{w2} \equiv w^2 \cdot \Delta \mathit{ch} \pmod{\ell}$
 in~\eqref{eq:fourth}
-gives $\Delta \mathit{an} \equiv (w^2 - t) \cdot \Delta \mathit{ch} \pmod{\ell}$. 
+gives $\Delta \mathit{na} \equiv (w^2 - t) \cdot \Delta \mathit{ch} \pmod{\ell}$. 
 Finally, the left equality in~\eqref{eq:third} 
 gives $(w^2 - t)\cdot \Delta \mathit{ch} \equiv n \cdot \Delta a \pmod{\ell}$.
 Using $\Delta a \equiv a \cdot \Delta \mathit{ch} \pmod{\ell}$
@@ -495,9 +510,9 @@ residue in $\ZZ_n$.
 \item choose a random $s_2 \rgets \range{N}$ and compute
            $c_2 \gets g^a \cdot h^{s_2} \in \GG$.
 
-\item choose a random $\rv \rgets \range{N}^8$
+\item choose a random $\rv \rgets \range{2^{2\lambda}}^8$
 and compute $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$,
-where $\phi$ is the homomrphism defined in~\eqref{eq:hom}. 
+where $\phi$ is the homomorphism defined in~\eqref{eq:hom}. 
 
 \item compute $\mathit{seed} \gets \text{Hash}(m, \GG, g, h, c, c_1, c_2, t, \Rv$).
 
@@ -506,9 +521,9 @@ use a $\text{PRNG}(\mathit{seed})$ to generate $(\mathit{ch}, \ell)$,
 where $\mathit{ch} \in \range{2^\lambda}$ and $\ell \in \primes$.
 
 \item compute:
-\[  \xv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^8, \quad
-    \zv_\ell \gets (\xv \bmod \ell) \in \range{\ell}^8, \quad
-    \zv_q \gets \lfloor \xv / \ell \rfloor \in \ZZ^8, \quad
+\[  \zv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^8, \quad
+    \zv_\ell \gets (\zv \bmod \ell) \in \range{\ell}^8, \quad
+    \zv_q \gets \lfloor \zv / \ell \rfloor \in \ZZ^8, \quad
     \Zv_q \gets \phi(\zv_q) \in \GG^4 \times \ZZ.
 \]
 
@@ -553,11 +568,11 @@ some message $m' \neq m$ can be used to compute $\sqrt{t} \in \ZZ_n$
 for some $2 \leq t \leq 1000$. 
 
 \paragraph{Proof of privacy.}
-TODO: Use the ZK proof of the interactive protocol. Easy corrolary.
+TODO: Use the ZK proof of the interactive protocol. Easy corollary.
 
 
 \paragraph{Proof of security.}
-TODO: Use the extractor of the interactive protocol. Easy corrolary.
+TODO: Use the extractor of the interactive protocol. Easy corollary.
  
 
 
