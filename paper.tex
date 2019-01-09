@@ -63,8 +63,8 @@ Moreover, this integer representation is unique.
 \begin{lemma}[Unique representation extraction in generic groups]
 \label{lem:unique}
 Let $\adv_1, \adv_2$ be two randomized algorithms that interact
-with generic group oracles for the group $\GG$ and 
-output $u_1, u_2 \in \GG$, respectively. 
+with group oracles for a generic group $\GG$ of unknown order.
+For $i=1,2$, algorithm $\adv_i$ outputs $u_i \in \GG$.
 Suppose that each algorithm makes at most $q$ type-1 queries
 and let $g_1,\ldots,g_q \in \GG$ be the returned random group elements. 
 
@@ -142,8 +142,8 @@ between the prover $P$ and the verifier $V$ works as follows:
 \item input:  the verifier has $(c, t) \in \GG \times \range{\lambda}$ and 
 the prover has $(c, t, n, s, w, a) \in \GG \times \range{N}^5$  
 
-\item Prover $P$ chooses a random integers $s_1, s_2 \rgets \range{N}$ and computes
-       $c_1 \gets g^w \cdot h^{s_1} \in \GG$ and $c_2 \gets g^a \cdot h^{s_2}$.
+\item Prover $P$ chooses two random integers $s_1, s_2 \rgets \range{N}$ and computes
+       $c_1 \gets g^w \cdot h^{s_1} \in \GG$ and $c_2 \gets g^a \cdot h^{s_2} \in \GG$.
 
 \item Next, define a homomorphism $\phi:\ZZ^8 \to \GG^4 \times \ZZ$ 
 parameterized by $g, h, c, c_1, c_2$ as follows:
@@ -183,7 +183,11 @@ Then the last relation proves that $(w')^2 - a' \cdot n = t$ in $\ZZ$,
 as required. 
 
 We design a ZKPK for a $\phi$-preimage 
-using a zero-knowledge protocol from~\cite[\S 3.5]{ourpaper}:
+using a zero-knowledge protocol from~\cite[\S 3.5]{ourpaper}.
+Here the verifier is given $T \in \GG^4 \times \ZZ$ 
+and the prover is given $T$ and $\vv \in \ZZ^8$
+where $\phi(\vv) = T$. 
+The protocol works as follows:
 \begin{enumerate}
 \item The prover chooses a random $\rv \rgets \range{2^{2\lambda}}^8$
 and computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$. \\
@@ -296,7 +300,7 @@ In a real transcript
 $Z_5 \deq \lfloor (\mathit{w2} \cdot \mathit{ch} + r_\text{w2})/\ell \rfloor -
           \lfloor (\mathit{na} \cdot \mathit{ch} + r_\text{na})/\ell \rfloor$.
 Therefore, because $\mathit{w2} - \mathit{na} = t$, we have
-that $Z_5$ is a real transcript satifies
+that $Z_5$ in a real transcript satifies
 \[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor - \Delta \]
 where $\Delta \in \{0, 1\}$. 
 In a real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
@@ -306,11 +310,37 @@ as in the the simulated $Z_5$ in~\eqref{eq:sim}.
 The only difference is that the real distribution is shifted by $\Delta$
 where as the simulated distribution is not.  
 Because $\Delta$ is small, $\Delta \in \{0,1\}$,
-this difference only negligibly affects the statistical distance. 
+this difference only negligibly affects the statistical distance
+between the real and simulated distributions. 
 We thus conclude that the simulated $Z_5$ in~\eqref{eq:sim} 
 is statistically close to its real distribution.
+
 Essentially the same argument shows that $Z_1, Z_2, Z_3, Z_4$ are
 also simulated correctly. 
+For example, in a real transcript 
+\begin{align*}
+    Z_1 & \deq g^{\lfloor (\mathit{ch}\cdot w + r_\text{w}) / \ell \rfloor} \cdot 
+             h^{\lfloor (\mathit{ch}\cdot \mathit{s1} + r_\text{s1}) / \ell \rfloor} = \\
+       & =   g^{\lfloor (\mathit{ch}\cdot w) / \ell \rfloor} \cdot
+             h^{\lfloor (\mathit{ch}\cdot s1) / \ell \rfloor} \cdot
+             g^{\lfloor r_\text{w} / \ell \rfloor - \Delta_\text{w}} \cdot 
+             h^{\lfloor r_\text{s1} / \ell \rfloor - \Delta_\text{s1}} =  \\
+       & = (\tilde{c}_1)^\mathit{ch} \cdot
+             g^{\lfloor r_\text{w} / \ell \rfloor} \cdot 
+             h^{\lfloor r_\text{s1} / \ell \rfloor} \cdot 
+             \left[ (g^{1/\ell})^{\delta_\text{w} - \ell \cdot \Delta_\text{w}} \cdot 
+               (h^{1/\ell})^{\delta_\text{s1} - \ell \cdot \Delta_\text{s1}} \right].
+\end{align*}
+where $\Delta_\text{w}, \Delta_\text{s1} \in \{0,1\}$
+and $\delta_\text{w} \deq ((\mathit{ch} \cdot w) \bmod \ell) \in \range{\ell}$
+and $\delta_\text{s1} \deq ((\mathit{ch} \cdot \mathit{s1}) \bmod \ell) \in \range{\ell}$.
+Hence, $Z_1$ in a real transcript is distributed as 
+the simulated $Z_1$ in~\eqref{eq:sim}, where the only
+difference is the quantity 
+$\Delta \deq (g^{1/\ell})^{\delta_\text{w} - \ell \cdot \Delta_\text{w}} \cdot 
+               (h^{1/\ell})^{\delta_\text{s1} - \ell \cdot \Delta_\text{s1}} \in \GG$. 
+We claim that this $\Delta$ only negligibly affects the statistical distance
+between the real and simulated distributions. 
 {\bf TODO:} explain why.
 
 Finally, because the simulated $c_1, c_2, \ell, \mathit{ch}, \Zv_q, \zv_\ell$
@@ -478,7 +508,9 @@ as required.   Note that this implies that $a \neq 0$.
 
 Because $a \neq 0$, the extractor can obtain $(n \bmod \ell)$
 from the left equality in~\eqref{eq:third}, and thus extract $n \in \ZZ$ by
-repeating over several $\ell$.  Similarly, it can extract $s \in \ZZ$ from
+repeating this procedure over several $\ell$ and then using the chinese
+remainder theorem.  
+Similarly, it can extract $s \in \ZZ$ from
 the right equality in~\eqref{eq:third}.   
 It thus obtains a witness $(n, s, w, a)$ 
 for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}, as required.
