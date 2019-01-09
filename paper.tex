@@ -8,7 +8,7 @@
 
 \begin{document}
 
-\title{An Air Drop That Preserves Recipient Privacy}
+\title{An Airdrop That Preserves Recipient Privacy}
 \author{Dan Boneh \and Riad Wahby}
 
 \maketitle
@@ -23,10 +23,10 @@ More to come.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Private air drop: definitions}
+\section{Private airdrop: definitions}
 
 
-A private air drop (PAD) system is a triple of efficient algorithms:
+A private airdrop (PAD) system is a triple of efficient algorithms:
 \begin{itemize}
 \item $\text{sendTokens}(\PK) \to (c, s)$:
 Generates a token $c$ to be posted on the blockchain,
@@ -82,7 +82,15 @@ namely $\alpha_{1,j} = \alpha_{2,j}$ for $j=1,\ldots,q$.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{A private air drop to RSA public keys}
+\section{A private airdrop to ECDSA and Schnorr public keys}
+
+TODO: needs to be written.  Maybe put this first because it is so much
+simpler?
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{A private airdrop to RSA public keys}
 
 From here we use the following notations:
 $\lambda$ is the security parameter (e.g., $\lambda = 128$), 
@@ -93,6 +101,7 @@ containing the smallest $2^\lambda$ odd primes.
 We will also need a set of public parameters that include the description
 of a cyclic group $\GG$ of unknown order.  We let $g$ and $h$ be two
 random generators of $\GG$ where the discrete-log of $g$ base $h$ is unknown. 
+
 
 \subsection{Proving knowledge of the factorization of a hidden integer}
 
@@ -124,7 +133,7 @@ The integer relation $w^2 = t + a\cdot n$ proves that
 $w^2 \equiv t \pmod{n}$, as required.
 We note that a ZKPK for~\eqref{eq:lang} proves that $t \in \ZZ$ is a quadratic
 residue modulo the committed $n$.  Leaking this bit of information about $n$
-does not interfere with the application to a secure air drop.
+does not interfere with the application to a secure airdrop.
 
 \medskip\noindent
 Protocol $\prot{P}$: The ZKPK protocol for~\eqref{eq:lang} 
@@ -288,15 +297,15 @@ $Z_5 \deq \lfloor (\mathit{w2} \cdot \mathit{ch} + r_\text{w2})/\ell \rfloor -
           \lfloor (\mathit{na} \cdot \mathit{ch} + r_\text{na})/\ell \rfloor$.
 Therefore, because $\mathit{w2} - \mathit{na} = t$, we have
 that $Z_5$ is a real transcript satifies
-\[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor + \Delta \]
-where $\Delta \in \{0, \pm 1, \pm 2\}$. 
+\[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor - \Delta \]
+where $\Delta \in \{0, 1\}$. 
 In a real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
 and $\lfloor r_\text{na} / \ell \rfloor$ 
 are statistically close to fresh uniform values in $\range{2^{2\lambda}/\ell}$, 
 as in the the simulated $Z_5$ in~\eqref{eq:sim}.
 The only difference is that the real distribution is shifted by $\Delta$
 where as the simulated distribution is not.  
-Because $\Delta$ is small, $\Delta \in \{0, \pm 1, \pm 2\}$,
+Because $\Delta$ is small, $\Delta \in \{0,1\}$,
 this difference only negligibly affects the statistical distance. 
 We thus conclude that the simulated $Z_5$ in~\eqref{eq:sim} 
 is statistically close to its real distribution.
@@ -478,11 +487,11 @@ for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}, as required.
 
 
 
-\subsection{The concrete air drop system}
+\subsection{The concrete airdrop system}
 
-The air drop system is obtained by applying the Fiat-Shamir
+The airdrop system is obtained by applying the Fiat-Shamir
 heuristic to the protocol from the previous section. 
-The concrete private air drop system works as follows:
+The concrete private airdrop system works as follows:
 
 \paragraph{Algorithm $\text{sendTokens}(\PK)$:}
 To send tokens to an RSA public key $\PK = (n, e)$ do:
@@ -594,12 +603,6 @@ TODO: Use the ZK proof of the interactive protocol. Easy corollary.
 TODO: Use the extractor of the interactive protocol. Easy corollary.
  
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{A private air drop to ElGamal public keys}
-
-TODO: needs to be written.  Maybe put this first because it is so much
-simpler?
 
 
 \bibliographystyle{alpha}
