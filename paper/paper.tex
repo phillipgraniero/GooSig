@@ -37,6 +37,7 @@ and a secret~$s$ given to the recipient via a private channel.
 For example, an encryption of $s$ under $\PK$ can be posted
 to the blockchain.   The posted encrypted $s$ is not associated with 
 the token $c$. 
+\RSW{is it necessary to suggest that Enc(s) appear on the blockchain? It could just be posted publicly, since it doesn't need to be remembered for long.}
 
 \item $\text{sign}(\SK, (c, s), m) \to \text{sig}$:
 Signs a message $m$ indicating that the token $c$ is spent.
