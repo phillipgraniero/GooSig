@@ -5,7 +5,7 @@ GooSigs are short (~1kB) signatures made using an RSA key that *don't reveal whi
 
 This document describes GooSigs informally, and documents libGooPy, a reference implementation.
 
-[protocol.txt](protocol.txt) describes the mechanics of the protocol; more details are coming soon.
+[protocol.txt](protocol.txt) describes the mechanics of the protocol; [the paper](paper/) gives more details.
 
 
 ## Overview
