@@ -24,9 +24,16 @@
 
 More to come.
 
+\rsw{stashed note from talk with DB}
+Simultaneously using the schemes of \S\ref{sec:dsa} and \S\ref{sec:rsa}
+    on the same blockchain allows distinguishing between users based on
+    key type.
+Can work around this using generic ZKPK, at substantial performance cost.
+(Alt narrative: talk about generic ZKPK first, then specialize to get better
+    perf. at cost of distinguishing.)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Private airdrop: definitions}
+\section{Private airdrop: definitions}\label{sec:defs}
 
 
 A private airdrop (PAD) system is a triple of efficient algorithms:
@@ -89,7 +96,7 @@ namely $\alpha_{1,j} = \alpha_{2,j}$ for $j=1,\ldots,q$.
 \input{pad_ecdsa.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{A private \airdrop to RSA public keys}
+\section{A private airdrop to RSA public keys}\label{sec:rsa}
 
 From here we use the following notations:
 $\lambda$ is the security parameter (e.g., $\lambda = 128$), 
@@ -102,7 +109,7 @@ of a cyclic group $\GG$ of unknown order.  We let $g$ and $h$ be two
 random generators of $\GG$ where the discrete-log of $g$ base $h$ is unknown. 
 
 
-\subsection{Proving knowledge of the factorization of a hidden integer}
+\subsection{Proving knowledge of the factorization of a hidden integer}\label{sec:rsa:proving}
 
 Let $n \in \range{N}$ be a secret integer 
 where $N$ is a public upper bound on~$n$.
@@ -520,7 +527,7 @@ for the relation ${\cal R}_{g,h}$ in~\eqref{eq:lang}, as required.
 
 
 
-\subsection{The concrete airdrop system}
+\subsection{The concrete airdrop system}\label{sec:rsa:airdrop}
 
 The airdrop system is obtained by applying the Fiat-Shamir
 heuristic to the protocol from the previous section. 

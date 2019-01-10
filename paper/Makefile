@@ -9,3 +9,4 @@ auto:
 
 clean:
 	latexmk -C paper.tex
+	rm -rf paper.bbl
