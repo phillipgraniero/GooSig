@@ -1,0 +1,25 @@
+\ProvidesPackage{peanutgallery}
+
+\definecolor{darkgreen}{rgb}{0,0.75,0}
+\definecolor{webred}{rgb}{0.5,0,0}
+\definecolor{webblue}{rgb}{0,0,0.8}
+
+\newcommand{\textred}[1]{\textcolor{red}{#1}}
+\ifx\noeditingmarks\undefined
+   \newcommand{\pgwrapper}[3]{\begingroup \color{#1}{#2}: {#3}\endgroup}
+   \newcommand{\MPworker}[2]{\unskip{\color{#1}\vrule\vrule}{\marginpar{\raggedright\color{#1}\sffamily\selectfont\scriptsize #2}}}
+   \newcommand{\changebars}[2]{[{\color{magenta}\em\begingroup{#1}\endgroup}][{\color{magenta}\sout{#2}}]}
+\else
+   \newcommand{\pgwrapper}[3]{}
+   \newcommand{\MPworker}[2]{\unskip}
+   \newcommand{\changebars}[2]{#1}
+\fi
+
+\newcommand{\db}[1]{\pgwrapper{red}{DB}{#1}}
+\newcommand{\rsw}[1]{\pgwrapper{Mulberry}{RSW}{#1}}
+
+\newcommand{\DB}[1]{\MPworker{red}{DB: #1}}
+\newcommand{\RSW}[1]{\MPworker{Mulberry}{RSW: #1}}
+
+\newcommand{\changebarsii}[2]{#1}
+
