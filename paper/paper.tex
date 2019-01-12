@@ -32,6 +32,35 @@ Can work around this using generic ZKPK, at substantial performance cost.
 (Alt narrative: talk about generic ZKPK first, then specialize to get better
     perf. at cost of distinguishing.)
 
+\rsw{stashed note from chat with Henry and Dima}
+Possible objection: why doesn't sender just generate a bunch of phony keys
+    and send all money to self?
+In other words, why is this scheme better, from the verifiers' point of view,
+    than the naive approach, i.e., sender generating a fresh key pair and
+    sending secret key to recipient?
+(Note that while the naive approach does not have existential unforgeability,
+    that property does not prevent self-dealing if sender knows secret key.
+Another way to say this is that the security property we need for the
+    airdrop-to-Github-users case is stronger than existential unforgeability.)
+
+One answer: for each RSA key $\PK = (n, e)$ to be paid, sender publishes
+    the challenge $c = g^nh^s$ and (separately, i.e., without revealing
+    correspondence) sender also publishes
+$(\PK, s')$, $s' = E(\PK, (c',s)))$, $c' = H(g^nh^s)$.
+In other words, the sender publishes a list of purported airdrop recipients
+    separately from the list of airdrop challenge tokens.
+
+If sender was dishonest with respect to any key, i.e., if for some $(\PK,
+    s')$, any of $s', c', c, s$ is invalid, key's owner can reveal $(\hat{c}',
+    \hat{s}) = D(\PK, s')$.
+Then verifiers check that $s' = E(\PK, (\hat{c}', \hat{s}))$, and that
+    either no corresponding $c$ exists, or that $c$ is not a commitment
+    to $n$ with opening $s$.
+
+\emph{Question:} do we need to make $E()$ deterministic for this to work
+    (say, $r = H(\PK)$ in OAEP)?
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Private airdrop: definitions}\label{sec:defs}
 
