@@ -266,7 +266,7 @@ $\mathit{ch} \rgets \range{2^\lambda}$, \AlgSep
 \> choose random $\zv_\ell \rgets \range{\ell}^8$, \AlgSep
 \lnum \label{ln:randv}
 \> choose random $\hat{\rv} \rgets \range{2^{2\lambda}}^8$
-and define $\hat{T} \deq \Big(\hat{c}_1^\mathit{ch}, \hat{c}_2^\mathit{ch}, 1, 1, \lfloor (t \cdot \mathit{ch})/\ell \rfloor\Big) \in \GG^4 \times \ZZ$, \AlgSep
+and define $\hat{T} \deq \Big(\hat{c}_1^\mathit{ch},\ \hat{c}_2^\mathit{ch},\ 1,\ 1,\ \lfloor (t \cdot \mathit{ch})/\ell \rfloor\Big) \in \GG^4 \times \ZZ$, \AlgSep
 \> set $\Zv_q \deq \hat{T} \cdot \phi(\lfloor \hat{\rv}/\ell \rfloor) \in \GG^4 \times \ZZ$, \AlgSep
 \lnum \label{ln:computeR}
 \> compute $\Rv \deq \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$, \AlgSep
@@ -309,17 +309,20 @@ $Z_5 \deq \lfloor (\mathit{w2} \cdot \mathit{ch} + r_\text{w2})/\ell \rfloor -
           \lfloor (\mathit{na} \cdot \mathit{ch} + r_\text{na})/\ell \rfloor$.
 Therefore, because $\mathit{w2} - \mathit{na} = t$, we have
 that $Z_5$ in a real transcript satifies
-\[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor - \Delta \]
-where $\Delta \in \{0, 1\}$. 
+\[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor + \Delta \]
+where $\Delta \in \{0, \pm 1\}$. 
 In a real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
 and $\lfloor r_\text{na} / \ell \rfloor$ 
 are statistically close to fresh uniform values in $\range{2^{2\lambda}/\ell}$, 
 as in the the simulated $Z_5$ in~\eqref{eq:sim}.
 The only difference is that the real distribution is shifted by $\Delta$
 where as the simulated distribution is not.  
-Because $\Delta$ is small, $\Delta \in \{0,1\}$,
-this difference only negligibly affects the statistical distance
+However this $\Delta$ only negligibly affects the statistical distance
 between the real and simulated distributions. 
+The reason is that in both distributions 
+every possible value in the range of $Z_5$, 
+except possibly at the edges, 
+is obtained from exactly $\ell^2$ values of $(r_\text{w2}, r_\text{na})$. 
 We thus conclude that the simulated $Z_5$ in~\eqref{eq:sim} 
 is statistically close to its real distribution.
 
@@ -331,17 +334,17 @@ For example, in a real transcript
              h^{\lfloor (\mathit{ch}\cdot \mathit{s1} + r_\text{s1}) / \ell \rfloor} = \\
        & =   g^{\lfloor (\mathit{ch}\cdot w) / \ell \rfloor} \cdot
              h^{\lfloor (\mathit{ch}\cdot s1) / \ell \rfloor} \cdot
-             g^{\lfloor r_\text{w} / \ell \rfloor - \Delta_\text{w}} \cdot 
-             h^{\lfloor r_\text{s1} / \ell \rfloor - \Delta_\text{s1}} =  \\
+             g^{\lfloor r_\text{w} / \ell \rfloor + \Delta_\text{w}} \cdot 
+             h^{\lfloor r_\text{s1} / \ell \rfloor + \Delta_\text{s1}} =  \\
        & = (\tilde{c}_1)^\mathit{ch} \cdot
              g^{\lfloor r_\text{w} / \ell \rfloor} \cdot 
              h^{\lfloor r_\text{s1} / \ell \rfloor} \cdot 
-             \left[ (g^{1/\ell})^{\delta_\text{w} - \ell \cdot \Delta_\text{w}} \cdot 
-               (h^{1/\ell})^{\delta_\text{s1} - \ell \cdot \Delta_\text{s1}} \right].
+             \left[ (g^{1/\ell})^{\delta_\text{w} + \ell \cdot \Delta_\text{w}} \cdot 
+               (h^{1/\ell})^{\delta_\text{s1} + \ell \cdot \Delta_\text{s1}} \right]
 \end{align*}
-where $\Delta_\text{w}, \Delta_\text{s1} \in \{0,1\}$
-and $\delta_\text{w} \deq ((\mathit{ch} \cdot w) \bmod \ell) \in \range{\ell}$
-and $\delta_\text{s1} \deq ((\mathit{ch} \cdot \mathit{s1}) \bmod \ell) \in \range{\ell}$.
+where $\Delta_\text{w}, \Delta_\text{s1} \in \{0,1\}$ as for $Z_5$, 
+and $\delta_\text{w} \deq (\mathit{ch} \cdot w \bmod \ell) \in \range{\ell}$
+and $\delta_\text{s1} \deq (\mathit{ch} \cdot \mathit{s1} \bmod \ell) \in \range{\ell}$.
 Hence, $Z_1$ in a real transcript is distributed as 
 the simulated $Z_1$ in~\eqref{eq:sim}, where the only
 difference is the quantity 
