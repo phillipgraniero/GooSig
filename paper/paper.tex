@@ -348,16 +348,18 @@ The only difference is that the real distribution is shifted by $\Delta$
 where as the simulated distribution is not.  
 However this $\Delta$ only negligibly affects the statistical distance
 between the real and simulated distributions. 
-The reason is that in both distributions 
+The reason is that in both distributions, 
 every possible value in the range of $Z_5$, 
 except possibly at the edges, 
-is obtained from exactly $\ell^2$ values of $(r_\text{w2}, r_\text{na})$. 
+is obtained from the same number of values 
+for the pair $(r_\text{w2}, r_\text{na})$. 
+%%  would be good to prove this as a general lemma.
 We thus conclude that the simulated $Z_5$ in~\eqref{eq:sim} 
 is statistically close to its real distribution.
 
 Essentially the same argument shows that $Z_1, Z_2, Z_3, Z_4$ are
 also simulated correctly. 
-For example, in a real transcript 
+For example, in a real transcript, where $c_1 = g^w h^\mathit{s1}$, we have
 \begin{align*}
     Z_1 & \deq g^{\lfloor (\mathit{ch}\cdot w + r_\text{w}) / \ell \rfloor} \cdot 
              h^{\lfloor (\mathit{ch}\cdot \mathit{s1} + r_\text{s1}) / \ell \rfloor} = \\
@@ -365,13 +367,13 @@ For example, in a real transcript
              h^{\lfloor (\mathit{ch}\cdot s1) / \ell \rfloor} \cdot
              g^{\lfloor r_\text{w} / \ell \rfloor + \Delta_\text{w}} \cdot 
              h^{\lfloor r_\text{s1} / \ell \rfloor + \Delta_\text{s1}} =  \\
-       & = (\tilde{c}_1)^\mathit{ch} \cdot
+       & = (c_1^{1/\ell})^\mathit{ch} \cdot
              g^{\lfloor r_\text{w} / \ell \rfloor} \cdot 
              h^{\lfloor r_\text{s1} / \ell \rfloor} \cdot 
              \left[ (g^{1/\ell})^{\delta_\text{w} + \ell \cdot \Delta_\text{w}} \cdot 
                (h^{1/\ell})^{\delta_\text{s1} + \ell \cdot \Delta_\text{s1}} \right]
 \end{align*}
-where $\Delta_\text{w}, \Delta_\text{s1} \in \{0,1\}$ as for $Z_5$, 
+where $\Delta_\text{w}, \Delta_\text{s1} \in \{0,1\}$,
 and $\delta_\text{w} \deq (\mathit{ch} \cdot w \bmod \ell) \in \range{\ell}$
 and $\delta_\text{s1} \deq (\mathit{ch} \cdot \mathit{s1} \bmod \ell) \in \range{\ell}$.
 Hence, $Z_1$ in a real transcript is distributed as 
