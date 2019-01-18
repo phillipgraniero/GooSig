@@ -42,9 +42,11 @@
 
 %%%%  Theorems 
 
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{definition}{Definition}[theorem]
+\ifx\useacmstyle\undefined
+    \newtheorem{theorem}{Theorem}
+    \newtheorem{lemma}[theorem]{Lemma}
+    \newtheorem{definition}{Definition}[theorem]
+\fi
 
 
 %%%%  Algorithm environment
