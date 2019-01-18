@@ -12,7 +12,7 @@
 \begin{document}
 
 \title{An Airdrop That Preserves Recipient Privacy}
-\author{Dan Boneh \and Riad Wahby}
+\author{Dan Boneh \and Chris Jeffrey \and Joseph Poon \and Riad Wahby}
 
 \maketitle
 
@@ -252,7 +252,8 @@ $\GG^4 \times \ZZ$.
 
 \paragraph{Comment 1.}
 The protocol is insecure if the group $\GG$ contains a non-identity
-element of known order.  In the multiplicative group $(\ZZ/n)^*$ the
+element of known order.  {\bf TODO: describe an attack.}
+In the multiplicative group $(\ZZ/n)^*$ the
 element $-1$ has order~$2$, and hence the protocol is insecure in this
 group.  Instead, we can work in the quotient group $(\ZZ/n)/\{\pm 1\}$, 
 where elements are represented as integers in the interval $[1,n/2]$
