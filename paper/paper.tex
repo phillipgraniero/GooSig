@@ -157,11 +157,11 @@ That is, we provide a ZKPK for the relation
   {\cal R}_{g,h} \deq \left\{ \Bigl( (c, t) \in \GG \times \range{\lambda},\ \ 
                               (n, s, w, a) \in \range{N}^4 \Bigr)  \ \ 
         \text{s.t.}\ \ 
-                \begin{split}
+                \begin{aligned}
                         c   & = g^n \cdot h^s \ \ \text{in $\GG$}, \\
                         w^2 & = t + a \cdot n \ \ \text{in $\ZZ$}, \\
                         2 & \leq t \leq \lambda  \ \textrm{a prime}
-                \end{split}  \right\}.
+                \end{aligned}  \right\}.
 \end{equation}
 Here $(c, t)$ is a statement and $(n, s, w, a)$ is a witness.
 The integer relation $w^2 = t + a\cdot n$ proves that 
@@ -226,9 +226,14 @@ and the prover is given $T$ and $\vv \in \ZZ^8$
 where $\phi(\vv) = T$. 
 The protocol works as follows:
 \begin{enumerate}
-\item The prover chooses a random $\rv \rgets \range{2^{2\lambda}}^8$
-and computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$. \\
-It sends $(c_1, c_2, \Rv)$ to the verifier.
+\item The prover chooses
+ $r_w, r_\mathit{w2}, r_\mathit{na}, r_\mathit{sa} \rgets \range{{2^{2\lambda}}}$
+ and
+ $r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2} \rgets \range{N \cdot 2^{2^\lambda}}$ and sets
+    $\rv \deq (r_w, r_\mathit{w2}, r_\mathit{s1}, r_a, r_\mathit{na}, 
+                     r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}) \in \ZZ^8$. \\
+It computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$
+and sends $(c_1, c_2, \Rv)$ to the verifier.
 
 \item The verifier chooses challenges $\mathit{ch} \rgets \range{2^\lambda}$
 and $\ell \rgets \primes$. \\
@@ -289,61 +294,65 @@ for the relation ${\cal R}_{g,h}$ in \eqref{eq:lang}.
 The simulator takes $(c, t)$ as input and outputs the simulated transcript
 $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$ as follows:
 \begin{alg}
-\> choose random $\hat{c}_1, \hat{c}_2 \rgets \GG,\ \ \ell \rgets \primes$, and
-$\mathit{ch} \rgets \range{2^\lambda}$, \AlgSep
-\> set $c_1 \gets \hat{c}_1^\ell$ and $c_2 \gets \hat{c}_2^\ell$, \AlgSep
+\> choose random $c_1, c_2 \rgets \GG,\ \ \ell \rgets \primes$, and
+\ \ $\mathit{ch} \rgets \range{2^\lambda}$, \AlgSep
+\lnum \label{ln:randvell}
 \> choose random $\zv_\ell \rgets \range{\ell}^8$, \AlgSep
-\lnum \label{ln:randv}
-\> choose random $\hat{\rv} \rgets \range{2^{2\lambda}}^8$
-and define $\hat{T} \deq \Big(\hat{c}_1^\mathit{ch},\ \hat{c}_2^\mathit{ch},\ 1,\ 1,\ \lfloor (t \cdot \mathit{ch})/\ell \rfloor\Big) \in \GG^4 \times \ZZ$, \AlgSep
-\> set $\Zv_q \deq \hat{T} \cdot \phi(\lfloor \hat{\rv}/\ell \rfloor) \in \GG^4 \times \ZZ$, \AlgSep
+\> choose random $Z_1, Z_2, Z_3, Z_4 \rgets \GG$, \\
+\lnum \label{ln:sim}
+\> choose random $\hat{r}_\text{w2}, \hat{r}_\text{na} \rgets \range{2^{2\lambda}}$
+and set $Z_5 \deq \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor \hat{r}_\text{w2} / \ell \rfloor - \lfloor \hat{r}_\text{na} / \ell \rfloor \in \ZZ$, \\
+\> set $\Zv_q \deq (Z_1, Z_2, Z_3, Z_4, Z_5)  \in \GG^4 \times \ZZ$, \AlgSep
 \lnum \label{ln:computeR}
 \> compute $\Rv \deq \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$, \AlgSep
 \> output $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$.
 \end{alg}
 We show the simulated transcript is distributed statistically close
 to an accepting transcript of a real protocol execution.
-Because $\ell$ does not divide $\abs{\GG}$ with overwhelming probability,
-we know that $c_1$ and $c_2$ are uniform in $\GG$. 
-Hence, observe that $c_1, c_2, \ell, \mathit{ch}$ are all distributed 
+In a real transcript we know that $c_1$ and $c_2$ are uniform in $\GG$. 
+Hence, observe that the simulated $c_1, c_2, \ell, \mathit{ch}$ are all distributed 
 exactly as in a real transcript.  It remains to show that the same holds
 for $\zv_\ell, \Zv_q$, and $\Rv$. 
-In an interaction with a real prover 
-the vector $\rv$ is chosen uniformly in $\range{2^{2\lambda}}^8$.
-Consider one value $r \rgets \range{2^{2\lambda}}$.
-Because $2^{2\lambda}$ is much larger than $\ell$
-we know that the pair 
-$\big(\lfloor r/\ell \rfloor,\ (r \bmod \ell) \big)$
-is statistically close to uniform in $\range{2^{2\lambda}/\ell} \times \range{\ell}$.
-It directly follows that $\zv_\ell$, which is masked by $(\rv \bmod \ell)$
+In an interaction with a real prover the quantities
+$r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}$
+are chosen uniformly in $\range{N \cdot 2^{2^\lambda}}$.
+Consider one such value $r \rgets \range{N \cdot 2^{2^\lambda}}$.
+Because $N \cdot 2^{2\lambda}$ is much larger than $\abs{\GG} \cdot \ell$
+we know that the pair
+$\big(\lfloor r/\ell \rfloor \bmod \abs{\GG},\ (r \bmod \ell) \big)$
+is statistically close to uniform in $\range{\,\abs{\GG}\,} \times \range{\ell}$.
+Similarly,  in a real transcript
+each of $r_w, r_\mathit{w2}, r_\mathit{na}, r_\mathit{sa}$
+is chosen uniformly in $\range{2^{2 \lambda}}$ and therefore
+each of these four values modulo $\ell$
+is statistically close to uniform in $\range{\ell}$.
+It follows that $\zv_\ell$, which is masked by $(\rv \bmod \ell)$
 in a real transcript, is statistically close to uniform 
-in $\range{\ell}^8$, as in the simulation.
+in $\range{\ell}^8$, as in line~\eqref{ln:randvell} in the simulation.
 
-Next we argue that $\Zv_q \in \GG^4 \times \ZZ$ is simulated correctly. 
-Write $\hat{\rv}$ generated on line~\eqref{ln:randv} in the simulation
-as $\hat{\rv} = \big(r_\text{w}, r_\text{w2}, r_\text{s1}, r_\text{a}, r_\text{na}, r_\text{s1w}, r_\text{sa}, r_\text{s2} \big)$.
-Then the simulated $\Zv_q$ is computed as:
-\begin{equation} \label{eq:sim}
-\Zv_q \deq \left(\begin{array}{l}
-Z_1 \gets \hat{c}_1^\mathit{ch} \cdot g^{\lfloor r_\text{w}/\ell \rfloor} \cdot h^{\lfloor r_\text{s1}/\ell \rfloor} ,\quad
-Z_2 \gets \hat{c}_2^\mathit{ch} \cdot g^{\lfloor r_\text{a}/\ell \rfloor} \cdot h^{\lfloor r_\text{s2}/\ell \rfloor} , \AlgSep
-Z_3 \gets g^{\lfloor r_\text{w2}/\ell \rfloor} \cdot h^{\lfloor r_\text{s1w}/\ell \rfloor} / \hat{c}_1^{\lfloor r_\text{w}/\ell \rfloor},\quad
-Z_4 \gets g^{\lfloor r_\text{na}/\ell \rfloor} \cdot h^{\lfloor r_\text{sa}/\ell \rfloor} / \hat{c}^{\lfloor r_\text{a}/\ell \rfloor}, \AlgSep
-Z_5 \gets \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2}/\ell \rfloor - \lfloor r_\text{na}/\ell \rfloor 
-\end{array}\right) \in \GG^4 \times \ZZ.  
-\end{equation}
-Let's start with $Z_5 \in \ZZ$.  
-In a real transcript 
+Next we argue that $\Zv_q \in \GG^4 \times \ZZ$ is simulated correctly.
+Observe that each of the first four components of $\Zv_q$ is a group
+element in $\GG$ that is randomized by
+$h^{\lfloor r_\mathit{s1} / \ell \rfloor},\
+ h^{\lfloor r_\mathit{s2} / \ell \rfloor},\
+ h^{\lfloor r_\mathit{s1w} / \ell \rfloor},\
+ h^{\lfloor r_\mathit{sa} / \ell \rfloor}$ respectively.
+Because these four exponents are close to uniform in $\range{\,\abs{\GG}\,}$ and are
+independent of everything else in the transcript, it follows that
+in a real transcript $Z_1, Z_2, Z_3, Z_4$ are independent and close to uniform elements in $\GG$.  This is also how these elements are chosen in the simulation.
+
+It remains to argue that $Z_5 \in \ZZ$ is simulated correctly. 
+In a real transcript this $Z_5$ is computed as 
 $Z_5 \deq \lfloor (\mathit{w2} \cdot \mathit{ch} + r_\text{w2})/\ell \rfloor -
           \lfloor (\mathit{na} \cdot \mathit{ch} + r_\text{na})/\ell \rfloor$.
-Therefore, because $\mathit{w2} - \mathit{na} = t$, we have
-that $Z_5$ in a real transcript satifies
+Because $\mathit{w2} - \mathit{na} = t$, we have
+that $Z_5$ in a real transcript satisfies
 \[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor + \Delta \]
 where $\Delta \in \{0, \pm 1\}$. 
-In a real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
+As argued above, in a real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
 and $\lfloor r_\text{na} / \ell \rfloor$ 
 are statistically close to fresh uniform values in $\range{2^{2\lambda}/\ell}$, 
-as in the the simulated $Z_5$ in~\eqref{eq:sim}.
+as in the simulated $Z_5$ in~\eqref{ln:sim}.
 The only difference is that the real distribution is shifted by $\Delta$
 where as the simulated distribution is not.  
 However this $\Delta$ only negligibly affects the statistical distance
@@ -354,36 +363,8 @@ except possibly at the edges,
 is obtained from the same number of values 
 for the pair $(r_\text{w2}, r_\text{na})$. 
 %%  would be good to prove this as a general lemma.
-We thus conclude that the simulated $Z_5$ in~\eqref{eq:sim} 
+We thus conclude that the simulated $Z_5$ in~\eqref{ln:sim} 
 is statistically close to its real distribution.
-
-Essentially the same argument shows that $Z_1, Z_2, Z_3, Z_4$ are
-also simulated correctly. 
-For example, in a real transcript, where $c_1 = g^w h^\mathit{s1}$, we have
-\begin{align*}
-    Z_1 & \deq g^{\lfloor (\mathit{ch}\cdot w + r_\text{w}) / \ell \rfloor} \cdot 
-             h^{\lfloor (\mathit{ch}\cdot \mathit{s1} + r_\text{s1}) / \ell \rfloor} = \\
-       & =   g^{\lfloor (\mathit{ch}\cdot w) / \ell \rfloor} \cdot
-             h^{\lfloor (\mathit{ch}\cdot s1) / \ell \rfloor} \cdot
-             g^{\lfloor r_\text{w} / \ell \rfloor + \Delta_\text{w}} \cdot 
-             h^{\lfloor r_\text{s1} / \ell \rfloor + \Delta_\text{s1}} =  \\
-       & = (c_1^{1/\ell})^\mathit{ch} \cdot
-             g^{\lfloor r_\text{w} / \ell \rfloor} \cdot 
-             h^{\lfloor r_\text{s1} / \ell \rfloor} \cdot 
-             \left[ (g^{1/\ell})^{\delta_\text{w} + \ell \cdot \Delta_\text{w}} \cdot 
-               (h^{1/\ell})^{\delta_\text{s1} + \ell \cdot \Delta_\text{s1}} \right]
-\end{align*}
-where $\Delta_\text{w}, \Delta_\text{s1} \in \{0,1\}$,
-and $\delta_\text{w} \deq (\mathit{ch} \cdot w \bmod \ell) \in \range{\ell}$
-and $\delta_\text{s1} \deq (\mathit{ch} \cdot \mathit{s1} \bmod \ell) \in \range{\ell}$.
-Hence, $Z_1$ in a real transcript is distributed as 
-the simulated $Z_1$ in~\eqref{eq:sim}, where the only
-difference is the quantity 
-$\Delta \deq (g^{1/\ell})^{\delta_\text{w} - \ell \cdot \Delta_\text{w}} \cdot 
-               (h^{1/\ell})^{\delta_\text{s1} - \ell \cdot \Delta_\text{s1}} \in \GG$. 
-We claim that this $\Delta$ only negligibly affects the statistical distance
-between the real and simulated distributions. 
-{\bf TODO:} explain why.
 
 Finally, because the simulated $c_1, c_2, \ell, \mathit{ch}, \Zv_q, \zv_\ell$
 are all distributed statistically close to a real transcript, 
