@@ -2,21 +2,35 @@
 
 \subsection{Private airdrop scheme}
 
-\paragraph{Syntax} A private airdrop (PAD) system is a triple of efficient algorithms:
+In a private airdrop scheme PAD, a \emph{sender} \Sr creates a \emph{token}
+    for a \emph{recipient} \Rt whose key pair is $(\PK, \SK)$, and posts
+    this token in a transaction on a blockchain.
+To claim the output of the transaction, \Rt generates a signature on a message
+    indicating that the token is spent, and posts this message and signature
+    to the blockchain.
+Finally, any \emph{verifier} \Vr can check the signature on the message
+    and the token.
+
+\paragraph{Syntax} PAD is a triple of efficient algorithms:
+%
 \begin{itemize}
 \item $\text{sendTokens}(\PK) \to (c, s)$:
-Generates a token $c$ to be posted on the blockchain,
-and a secret~$s$ given to the recipient via a private channel.
-For example, an encryption of $s$ under $\PK$ can be posted
-to the blockchain.   The posted encrypted $s$ is not associated with 
-the token $c$. 
-\RSW{is it necessary to suggest that Enc(s) appear on the blockchain? It could just be posted publicly, since it doesn't need to be remembered for long.}
+%
+\Sr generates token $c$ and secret $s$, posts $c$ publicly, and sends $s$
+    to \Rt via some private channel.
+%To send a \emph{token} $c$ to a \emph{recipient} \Rt whose key is $(\PK,
+%    \SK)$, a \emph{sender} \Sr generates $c$ to be posted on a blockchain,
+%    plus a \emph{secret}~$s$ given to \Rt via some private channel.
+\unskip\footnote{For example, a encryption of $s$ under $\PK$ can be posted
+    to a public messageboard. Note, however, that the posted ciphertext
+    should not be publicly associated with the token $c$.}
+%\RSW{is it necessary to suggest that Enc(s) appear on the blockchain? It could just be posted publicly, since it doesn't need to be remembered for long.}
 
 \item $\text{sign}(\SK, (c, s), m) \to \sig$:
-Signs a message $m$ indicating that the token $c$ is spent.
+\Rt generates signature $\sig$ over message $m$.
 
 \item $\text{verify}(c, m, \sig) \to \{\text{yes},\text{no}\}:$
-Verify that a signature $\sig$ on token $c$ is valid.
+\Vr checks signature $\sig$ on message $m$ for token $c$.
 \end{itemize}
 
 \paragraph{Security} A private airdrop scheme is secure if it is \emph{anonymous} and \emph{unforgeable}.

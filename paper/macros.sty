@@ -1,3 +1,6 @@
+\usepackage{xspace}
+\newcommand{\xspacemm}{\ifmmode\else\xspace\fi}
+
 \newcommand{\Section}[1]{\hyperref[#1]{Section~\ref*{#1}}}
 \newcommand{\Appendix}[1]{\hyperref[#1]{Appendix~\ref*{#1}}}
 \newcommand{\Theorem}[1]{\hyperref[#1]{Theorem~\ref*{#1}}}
@@ -11,8 +14,8 @@
 
 \newcommand{\abs}[1]{\lvert #1 \rvert}
 \newcommand{\deq}{\mathrel{\mathop:}=}
-\newcommand{\GG}{\mathbb G}
-\newcommand{\HH}{\mathbb H}
+\newcommand{\GG}{\mathbb{G}}
+\newcommand{\HH}{\mathbb{H}}
 \newcommand{\gHH}{g_\mathbb{H}}
 \newcommand{\ZZ}{\mathbb Z}
 \newcommand{\range}[1]{[{#1}]}
@@ -29,6 +32,10 @@
 \newcommand{\probover}[2]{\ensuremath{\Probab\limits_{#2}}\left[{#1}\right]}
 \newcommand{\sizeof}[1]{\ensuremath{\left|{#1}\right|}}
 \newcommand{\chall}{\mathcal{C}}
+
+\newcommand{\Sr}{\ensuremath{\mathcal{S}}\xspacemm}
+\newcommand{\Rt}{\ensuremath{\mathcal{R}}\xspacemm}
+\newcommand{\Vr}{\ensuremath{\mathcal{V}}\xspacemm}
 
 \newcommand{\msg}{\ensuremath{\text{msg}}}
 \newcommand{\sig}{\ensuremath{\text{sig}}}
