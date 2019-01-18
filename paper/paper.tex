@@ -226,13 +226,14 @@ and the prover is given $T$ and $\vv \in \ZZ^8$
 where $\phi(\vv) = T$. 
 The protocol works as follows:
 \begin{enumerate}
-\item The prover chooses
- $r_w, r_\mathit{w2}, r_\mathit{na}, r_\mathit{sa} \rgets \range{{2^{2\lambda}}}$
- and
- $r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2} \rgets \range{N \cdot 2^{2^\lambda}}$ and sets
+\item The prover sets
     $\rv \deq (r_w, r_\mathit{w2}, r_\mathit{s1}, r_a, r_\mathit{na}, 
-                     r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}) \in \ZZ^8$. \\
-It computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$
+                     r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}) \in \ZZ^8$ where
+\[ r_w, r_\mathit{w2}, r_\mathit{na}, r_\mathit{sa} \rgets \range{{2^{2\lambda}}} 
+    \quad\text{and}\quad
+   r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2} \rgets \range{N \cdot 2^{2\lambda}}.
+\]
+The prover computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$
 and sends $(c_1, c_2, \Rv)$ to the verifier.
 
 \item The verifier chooses challenges $\mathit{ch} \rgets \range{2^\lambda}$
@@ -299,6 +300,7 @@ $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$ as follows:
 \ \ $\mathit{ch} \rgets \range{2^\lambda}$, \AlgSep
 \lnum \label{ln:randvell}
 \> choose random $\zv_\ell \rgets \range{\ell}^8$, \AlgSep
+\lnum \label{ln:randZ}
 \> choose random $Z_1, Z_2, Z_3, Z_4 \rgets \GG$, \\
 \lnum \label{ln:sim}
 \> choose random $\hat{r}_\text{w2}, \hat{r}_\text{na} \rgets \range{2^{2\lambda}}$
@@ -316,8 +318,8 @@ exactly as in a real transcript.  It remains to show that the same holds
 for $\zv_\ell, \Zv_q$, and $\Rv$. 
 In an interaction with a real prover the quantities
 $r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}$
-are chosen uniformly in $\range{N \cdot 2^{2^\lambda}}$.
-Consider one such value $r \rgets \range{N \cdot 2^{2^\lambda}}$.
+are chosen uniformly in $\range{N \cdot 2^{2\lambda}}$.
+Consider one such value $r \rgets \range{N \cdot 2^{2\lambda}}$.
 Because $N \cdot 2^{2\lambda}$ is much larger than $\abs{\GG} \cdot \ell$
 we know that the pair
 $\big(\lfloor r/\ell \rfloor \bmod \abs{\GG},\ (r \bmod \ell) \big)$
@@ -340,7 +342,9 @@ $h^{\lfloor r_\mathit{s1} / \ell \rfloor},\
  h^{\lfloor r_\mathit{sa} / \ell \rfloor}$ respectively.
 Because these four exponents are close to uniform in $\range{\,\abs{\GG}\,}$ and are
 independent of everything else in the transcript, it follows that
-in a real transcript $Z_1, Z_2, Z_3, Z_4$ are independent and close to uniform elements in $\GG$.  This is also how these elements are chosen in the simulation.
+in a real transcript $Z_1, Z_2, Z_3, Z_4$ are independent and close to uniform elements in $\GG$.  This is also how these elements are chosen 
+on line~\eqref{ln:randZ} in the simulation.
+
 
 It remains to argue that $Z_5 \in \ZZ$ is simulated correctly. 
 In a real transcript this $Z_5$ is computed as 
@@ -350,10 +354,10 @@ Because $\mathit{w2} - \mathit{na} = t$, we have
 that $Z_5$ in a real transcript satisfies
 \[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor + \Delta \]
 where $\Delta \in \{0, \pm 1\}$. 
-As argued above, in a real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
+In a real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
 and $\lfloor r_\text{na} / \ell \rfloor$ 
 are statistically close to fresh uniform values in $\range{2^{2\lambda}/\ell}$, 
-as in the simulated $Z_5$ in~\eqref{ln:sim}.
+as in the simulated $Z_5$ on line~\eqref{ln:sim}.
 The only difference is that the real distribution is shifted by $\Delta$
 where as the simulated distribution is not.  
 However this $\Delta$ only negligibly affects the statistical distance
