@@ -186,8 +186,8 @@ the prover has $(c, t, n, s, w, a) \in \GG \times \range{N}^5$
 parameterized by $g, h, c, c_1, c_2$ as follows:
 \begin{equation} \label{eq:hom}
   \phi\left(\!\!\begin{array}{l}
-                w, \mathit{w2}, s_1, a, \\
-                \mathit{na}, \mathit{s1w}, \mathit{sa}, s_2
+                w, \mathit{w2}, \mathit{s1}, a, \\
+                \mathit{na}, \mathit{s1w}, \mathit{sa}, \mathit{s2}
       \end{array}  \!\!\!\right) \deq
       \Bigl(\ 
        g^w \cdot h^{\mathit{s1}},\ \ \ 
@@ -231,7 +231,7 @@ The protocol works as follows:
                      r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}) \in \ZZ^8$ where
 \[ r_w, r_\mathit{w2}, r_\mathit{na}, r_\mathit{sa} \rgets \range{{2^{2\lambda}}} 
     \quad\text{and}\quad
-   r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2} \rgets \range{N \cdot 2^{2\lambda}}.
+   r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2} \rgets \range{N}.
 \]
 The prover computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$
 and sends $(c_1, c_2, \Rv)$ to the verifier.
@@ -318,9 +318,9 @@ exactly as in a real transcript.  It remains to show that the same holds
 for $\zv_\ell, \Zv_q$, and $\Rv$. 
 In an interaction with a real prover the quantities
 $r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}$
-are chosen uniformly in $\range{N \cdot 2^{2\lambda}}$.
-Consider one such value $r \rgets \range{N \cdot 2^{2\lambda}}$.
-Because $N \cdot 2^{2\lambda}$ is much larger than $\abs{\GG} \cdot \ell$
+are chosen uniformly in $\range{N}$.
+Consider one such value $r \rgets \range{N}$.
+Because $N$ is much larger than $\abs{\GG} \cdot \ell$
 we know that the pair
 $\big(\lfloor r/\ell \rfloor \bmod \abs{\GG},\ (r \bmod \ell) \big)$
 is statistically close to uniform in $\range{\,\abs{\GG}\,} \times \range{\ell}$.
