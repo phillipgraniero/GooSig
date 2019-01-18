@@ -1,6 +1,8 @@
-\section{Private airdrop: definitions}\label{sec:defs}
+\section{Definitions}\label{sec:defs}
 
-A private airdrop (PAD) system is a triple of efficient algorithms:
+\subsection{Private airdrop scheme}
+
+\paragraph{Syntax} A private airdrop (PAD) system is a triple of efficient algorithms:
 \begin{itemize}
 \item $\text{sendTokens}(\PK) \to (c, s)$:
 Generates a token $c$ to be posted on the blockchain,
@@ -17,47 +19,64 @@ Signs a message $m$ indicating that the token $c$ is spent.
 Verify that a signature $\sig$ on token $c$ is valid.
 \end{itemize}
 
-\rsw{Needs improved typesetting, notation} PAD must satisfy two security properties:
+\paragraph{Security} A private airdrop scheme is secure if it is \emph{anonymous} and \emph{unforgeable}.
 
-\paragraph{Privacy}
-The privacy game
-\RSW{notation for game naming}
-is defined as follows:
-
+\medskip\noindent\textit{Anonymity} means, roughly speaking, that $c$ and $\sig$ reveal
+    nothing about $\PK$.
+Specifically, consider $\mathsf{Anonym}$, a game between a PPT adversary $\adv$
+    and a challenger $\chall$:
+%
 \begin{itemize}
-\item Adversary sends $\msg$ and keys $(\PK_0, \SK_0)$, $(\PK_1, \SK_1)$ to Challenger.
+\item $\chall$ chooses keys $(\PK_0, \SK_0)$, $(\PK_1, \SK_1)$, and sends $(\PK_0, \PK_1)$ to $\adv$.
 
-\item Challenger chooses $b \rgets \{0,1\}$,
+\item $\adv$ chooses $\msg$ and sends it to $\chall$.
+
+\item $\chall$ chooses $b \rgets \{0,1\}$,
 computes $(c, s) \gets \text{sendTokens}(\PK_b)$ and
 $\sig \gets \text{sign}(\SK_b, (c, s), \msg)$,
-and sends $(c, \sig)$ to Adversary.
+and sends $(c, \sig)$ to $\adv$.
 
-\item Adversary outputs $b'$.
+\item $\adv$ outputs $b'$.
 
 \end{itemize}
-An airdrop scheme is \emph{private} if $\sizeof{\probab{b' = b} - \nicefrac{1}{2}} < \text{negl}$.
+%
+$\adv$ wins $\mathsf{Anonym}$ if $b' = b$.
+
+\begin{definition}
+Let an adversary $\adv$'s advantage in $\mathsf{Anonym}$ be
+$\mathrm{Adv}_{\adv}^{\mathsf{Anonym}} = \sizeof{\probab{\adv~\text{wins}} - \nicefrac{1}{2}}$.
+Then an airdrop scheme is \emph{anonymous} if, for any PPT adversary
+    $\adv$, $\mathrm{Adv}_{\adv}^{\mathsf{Anonym}} \le \text{negl}$.
+\end{definition}
 
 
-\paragraph{Existential unforgeability}
-The existential forgery game is defined as follows:
-
+\medskip\noindent\textit{Unforgeability} means, roughly speaking, that
+    a party that does not know $\SK$ cannot generate a valid signature
+    for any message, even if it knows a valid signature for any other
+    message.
+Specifically, consider $\mathsf{Unforg}$, a game between a PPT adversary
+    $\adv$ and a challenger $\chall$:
+%
 \begin{itemize}
-\item Challenger chooses a key $(\PK, \SK)$ and sends $\PK$ to Adversary.
+\item $\chall$ chooses a key $(\PK, \SK)$ and sends $\PK$ to $\adv$.
 
-\item Adversary computes $(c, s) \gets \text{sendTokens}(\PK)$, chooses \msg, sends $(c, s, \msg)$ to Challenger.
+\item $\adv$ computes $(c, s) \gets \text{sendTokens}(\PK)$, chooses \msg, and sends $(c, s, \msg)$ to $\chall$.
 
-\item Challenger computes $\sig \gets \text{sign}(\SK, (c, s), \msg)$ and sends to Adversary.
+\item $\chall$ computes $\sig \gets \text{sign}(\SK, (c, s), \msg)$ and sends to $\adv$.
 
-\item Adversary outputs $(\msg', \sig')$.
+\item $\adv$ outputs $(\msg', \sig')$.
 
 \end{itemize}
-An airdop is \emph{existentially unforgeable} if
-$\probab{\msg' \neq \msg \wedge \text{verify}(c, \msg', \sig') = \text{yes}} < \text{negl}$.
+%
+$\adv$ wins $\mathsf{Unforg}$ if $\msg' \neq \msg \wedge \text{verify}(c, \msg', \sig') = \text{yes}$.
 
-%TODO: Need to state security properties formally: 
-%(1) $c$ and $\text{sig}$ should reveal nothing about $\PK$,
-%(2) without $\SK$ we have existential unforgeability under a 
-%(one-time) chosen message attack.
+\begin{definition}
+Let an adversary $\adv$'s advantage in $\mathsf{Unforg}$ be
+$\mathrm{Adv}_{\adv}^{\mathsf{Unforg}} = \probab{\adv~\text{wins}}$.
+Then an airdop is \emph{unforgeable} if, for any PPT adversary $\adv$,
+$\mathrm{Adv}_{\adv}^{\mathsf{Unforg}} \le \text{negl}$.
+\end{definition}
+
 
 \subsection{Zero-knowledge proofs in generic groups}
 
