@@ -17,10 +17,47 @@ Signs a message $m$ indicating that the token $c$ is spent.
 Verify that a signature $\sig$ on token $c$ is valid.
 \end{itemize}
 
-TODO: Need to state security properties formally: 
-(1) $c$ and $\text{sig}$ should reveal nothing about $\PK$,
-(2) without $\SK$ we have existential unforgeability under a 
-(one-time) chosen message attack.
+\rsw{Needs improved typesetting, notation} PAD must satisfy two security properties:
+
+\paragraph{Privacy}
+The privacy game
+\RSW{notation for game naming}
+is defined as follows:
+
+\begin{itemize}
+\item Adversary sends $\msg$ and keys $(\PK_0, \SK_0)$, $(\PK_1, \SK_1)$ to Challenger.
+
+\item Challenger chooses $b \rgets \{0,1\}$,
+computes $(c, s) \gets \text{sendTokens}(\PK_b)$ and
+$\sig \gets \text{sign}(\SK_b, (c, s), \msg)$,
+and sends $(c, \sig)$ to Adversary.
+
+\item Adversary outputs $b'$.
+
+\end{itemize}
+An airdrop scheme is \emph{private} if $\sizeof{\probab{b' = b} - \nicefrac{1}{2}} < \text{negl}$.
+
+
+\paragraph{Existential unforgeability}
+The existential forgery game is defined as follows:
+
+\begin{itemize}
+\item Challenger chooses a key $(\PK, \SK)$ and sends $\PK$ to Adversary.
+
+\item Adversary computes $(c, s) \gets \text{sendTokens}(\PK)$, chooses \msg, sends $(c, s, \msg)$ to Challenger.
+
+\item Challenger computes $\sig \gets \text{sign}(\SK, (c, s), \msg)$ and sends to Adversary.
+
+\item Adversary outputs $(\msg', \sig')$.
+
+\end{itemize}
+An airdop is \emph{existentially unforgeable} if
+$\probab{\msg' \neq \msg \wedge \text{verify}(c, \msg', \sig') = \text{yes}} < \text{negl}$.
+
+%TODO: Need to state security properties formally: 
+%(1) $c$ and $\text{sig}$ should reveal nothing about $\PK$,
+%(2) without $\SK$ we have existential unforgeability under a 
+%(one-time) chosen message attack.
 
 \subsection{Zero-knowledge proofs in generic groups}
 
