@@ -24,6 +24,14 @@
 \newcommand{\bdv}{\mathcal{B}}
 \newcommand{\defn}[1]{\textbf{#1}}
 
+\DeclareMathOperator*{\Probab}{Pr}
+\newcommand{\probab}[1]{\ensuremath{\Probab\left[{#1}\right]}}
+\newcommand{\probover}[2]{\ensuremath{\Probab\limits_{#2}}\left[{#1}\right]}
+\newcommand{\sizeof}[1]{\ensuremath{\left|{#1}\right|}}
+
+\newcommand{\msg}{\ensuremath{\text{msg}}}
+\newcommand{\sig}{\ensuremath{\text{sig}}}
+
 \newcommand{\rgets}{\mathrel{\mathpalette\rgetscmd\relax}}
 \newcommand{\rgetscmd}{\ooalign{$\leftarrow$\cr
     \hidewidth\raisebox{1.2\height}{\scalebox{0.5}{\ \rm R}}\hidewidth\cr}}

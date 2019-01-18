@@ -1,0 +1,537 @@
+\section{A private airdrop to RSA public keys}\label{sec:rsa}
+
+From here we use the following notations:
+$\lambda$ is the security parameter (e.g., $\lambda = 128$), 
+$\range{\ell}$ denotes the set of integers $\{0,1,\ldots,\ell-1\}$, and 
+$\primes$ is a set of size $2^\lambda$ 
+containing the smallest $2^\lambda$ odd primes. 
+%
+We will also need a set of public parameters that include the description
+of a cyclic group $\GG$ of unknown order.  We let $g$ and $h$ be two
+random generators of $\GG$ where the discrete-log of $g$ base $h$ is unknown. 
+
+
+\subsection{Proving knowledge of the factorization of a hidden integer}\label{sec:rsa:proving}
+
+Let $n \in \range{N}$ be a secret integer 
+where $N$ is a public upper bound on~$n$.
+We will also assume that $N > \abs{\GG} \cdot 2^{2 \lambda}$.
+Let $c \deq g^n \cdot h^s \in \GG$ be a commitment to $n$, 
+where $s \rgets \range{N}$.  
+We first develop a zero knowledge protocol for proving knowledge of the
+factorization of~$n$ given only $c$. 
+
+
+To prove knowledge of the factorization of $n$ the prover
+proves knowledge of a $w \in \range{N}$ such that $w^2 \equiv t \pmod{n}$
+for some small public prime $t \in \ZZ$, namely $2 \leq t \leq \lambda$.
+That is, we provide a ZKPK for the relation
+\begin{equation} \label{eq:lang}
+  \mathcal{R}_{g,h} \deq \left\{ \Bigl( (c, t) \in \GG \times \range{\lambda},\ \ 
+                              (n, s, w, a) \in \range{N}^4 \Bigr)  \ \ 
+        \text{s.t.}\ \ 
+                \begin{aligned}
+                        c   & = g^n \cdot h^s \ \ \text{in $\GG$}, \\
+                        w^2 & = t + a \cdot n \ \ \text{in $\ZZ$}, \\
+                        2 & \leq t \leq \lambda  \ \textrm{a prime}
+                \end{aligned}  \right\}.
+\end{equation}
+Here $(c, t)$ is a statement and $(n, s, w, a)$ is a witness.
+The integer relation $w^2 = t + a\cdot n$ proves that 
+$w^2 \equiv t \pmod{n}$, as required.
+We note that a ZKPK for~\eqref{eq:lang} proves that $t \in \ZZ$ is a quadratic
+residue modulo the committed $n$.  Leaking this bit of information about $n$
+does not interfere with the application to a secure
+\RSW{``secure'' $\rightarrow$ ``private''?}
+airdrop.
+
+\medskip\noindent
+Protocol $\prot{P}$: The ZKPK protocol for~\eqref{eq:lang} 
+between the prover $P$ and the verifier $V$ works as follows:
+\begin{itemize}
+\item input:  the verifier has $(c, t) \in \GG \times \range{\lambda}$ and 
+the prover has $(c, t, n, s, w, a) \in \GG \times \range{N}^5$  
+
+\item Prover $P$ chooses two random integers $s_1, s_2 \rgets \range{N}$ and computes
+       $c_1 \gets g^w \cdot h^{s_1} \in \GG$ and $c_2 \gets g^a \cdot h^{s_2} \in \GG$.
+
+\item Next, define a homomorphism $\phi:\ZZ^8 \to \GG^4 \times \ZZ$ 
+parameterized by $g, h, c, c_1, c_2$ as follows:
+\begin{equation} \label{eq:hom}
+  \phi\left(\!\!\begin{array}{l}
+                w, \mathit{w2}, \mathit{s1}, a, \\
+                \mathit{na}, \mathit{s1w}, \mathit{sa}, \mathit{s2}
+      \end{array}  \!\!\!\right) \deq
+      \Bigl(\ 
+       g^w \cdot h^{\mathit{s1}},\ \ \ 
+       g^a \cdot h^{\mathit{s2}},\ \ \ 
+       g^{\mathit{w2}} \cdot h^{\mathit{s1w}} / c_1^w,\ \ \ 
+       g^{\mathit{na}} \cdot h^{\mathit{sa}} / c^a,\ \ \ 
+       \mathit{w2} - \mathit{na}\ \Bigr)
+\end{equation}
+It is easy to see that $\phi$ is a group homomorphism.
+The range of $\phi$ is the group $\GG^4 \times \ZZ$.  
+We will write the group operation in this group multiplicatively.
+That is, if $(a_i, b_i, c_i, d_i, e_i) \in \GG^4 \times \ZZ$ for $i=1,2$
+then 
+\[  (a_1, b_1, c_1, d_1, e_1) \cdot (a_2, b_2, c_2, d_2, e_2) \deq 
+      (a_1 a_2,\ b_1 b_2,\ c_1 c_2,\ d_1 d_2,\ e_1 + e_2).  \]
+
+We need a ZKPK for a $\phi$-preimage of 
+$T \deq (c_1, c_2, 1, 1, t) \in \GG^4 \times \ZZ$. 
+In other words, we need a zero-knowledge proof of knowledge for a vector 
+$\vv' = (w', \mathit{w2}', s_1', a', \mathit{na}', 
+              \mathit{s1w}', \mathit{sa}', s_2') \in \ZZ^8$ 
+such that 
+\[   \phi(\vv') = T = (c_1, c_2, 1, 1, t) \in \GG^4 \times \ZZ.  \]
+Doing so proves 
+that $c_1$ is a commitment to $w' \in \ZZ$, 
+that $c_2$ is a commitment to $a' \in \ZZ$,
+that $\mathit{w2}' = (w')^2$, and 
+that $\mathit{na}' = a' \cdot n$ for some integer $a'$.
+Then the last relation proves that $(w')^2 - a' \cdot n = t$ in $\ZZ$,
+as required. 
+
+We design a ZKPK for a $\phi$-preimage 
+using a zero-knowledge protocol from~\cite[\S 3.5]{ourpaper}.
+Here the verifier is given $T \in \GG^4 \times \ZZ$ 
+and the prover is given $T$ and $\vv \in \ZZ^8$
+where $\phi(\vv) = T$. 
+The protocol works as follows:
+\begin{enumerate}
+\item The prover sets
+    $\rv \deq (r_w, r_\mathit{w2}, r_\mathit{s1}, r_a, r_\mathit{na}, 
+                     r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}) \in \ZZ^8$ where
+\[ r_w, r_\mathit{w2}, r_\mathit{na}, r_\mathit{sa} \rgets \range{{2^{2\lambda}}} 
+    \quad\text{and}\quad
+   r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2} \rgets \range{N}.
+\]
+The prover computes $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$
+and sends $(c_1, c_2, \Rv)$ to the verifier.
+
+\item The verifier chooses challenges $\mathit{ch} \rgets \range{2^\lambda}$
+and $\ell \rgets \primes$. \\
+It sends $(\ell, \mathit{ch})$ to the prover.
+
+\item The prover computes:
+\[  \zv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^8, \quad
+    \zv_\ell \gets (\zv \bmod \ell) \in \range{\ell}^8, \quad
+    \zv_q \gets \lfloor \zv / \ell \rfloor \in \ZZ^8, \quad
+    \Zv_q \gets \phi(\zv_q)  
+\]
+and sends $(\Zv_q, \zv_\ell) \in (\GG^4 \times \ZZ) \times \range{\ell}^8$ 
+to the verifier. 
+
+\item The verifier accepts if 
+$\ \Zv_q^\ell \cdot \phi(\zv_\ell) = T^\mathit{ch} \cdot \Rv\ $ in 
+$\GG^4 \times \ZZ$.
+\end{enumerate}
+\end{itemize}
+
+
+\paragraph{Comment 1.}
+The protocol is insecure if the group $\GG$ contains a non-identity
+element of known order.  {\bf TODO: describe an attack.}
+In the multiplicative group $(\ZZ/n)^*$ the
+element $-1$ has order~$2$, and hence the protocol is insecure in this
+group.  Instead, we can work in the quotient group $(\ZZ/n)/\{\pm 1\}$, 
+where elements are represented as integers in the interval $[1,n/2]$
+and the product of $x$ and $y$ is defined as 
+$\abs{x \cdot y} = \min(z, n-z)$ where $z = (x \cdot y \bmod n)$.
+In this group $-1$ is the same as $1$, and presumably there are
+no other known elements of known order.
+
+\paragraph{Comment 2.}
+The commitment $c_2$ to the integer $a$ is necessary for soundness,
+and in particular to ensure that $a$ is an integer.  If $c_2$ along
+with $s_2$ and the second coordinate of $\phi$ are eliminated then there
+is an attack where an adversarial prover can prove knowledge of
+$(\sqrt{3} \bmod n)$ using $a = 1/n$ and $w = 2$.
+
+\paragraph{Comment 3.}
+There is a seemingly simpler method to prove that one knows the
+factorization of~$n$, namely, prove that one knows $p$ such that $p$
+divides $n$.  That is, instead of committing to $w$ we would commit to
+$p$ and $q$ and then prove that $p \cdot q = n$. But we would
+also need to prove that the committed $p$ is not one of 
+$\{1, -1, n, -n\}$, and that results in a longer proof.
+
+\paragraph{Proof of security.}
+We need to prove the protocol above is zero-knowledge and a 
+proof of knowledge. 
+
+\begin{theorem}
+Protocol $\prot{P}$ is a zero-knowledge protocol
+for the relation $\mathcal{R}_{g,h}$ in \eqref{eq:lang}.
+\end{theorem}
+
+\begin{proof}
+The simulator takes $(c, t)$ as input and outputs the simulated transcript
+$(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$ as follows:
+\begin{alg}
+\> choose random $c_1, c_2 \rgets \GG,\ \ \ell \rgets \primes$, and
+\ \ $\mathit{ch} \rgets \range{2^\lambda}$, \AlgSep
+\lnum \label{ln:randvell}
+\> choose random $\zv_\ell \rgets \range{\ell}^8$, \AlgSep
+\lnum \label{ln:randZ}
+\> choose random $Z_1, Z_2, Z_3, Z_4 \rgets \GG$, \\
+\lnum \label{ln:sim}
+\> choose random $\hat{r}_\text{w2}, \hat{r}_\text{na} \rgets \range{2^{2\lambda}}$
+and set $Z_5 \deq \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor \hat{r}_\text{w2} / \ell \rfloor - \lfloor \hat{r}_\text{na} / \ell \rfloor \in \ZZ$, \\
+\> set $\Zv_q \deq (Z_1, Z_2, Z_3, Z_4, Z_5)  \in \GG^4 \times \ZZ$, \AlgSep
+\lnum \label{ln:computeR}
+\> compute $\Rv \deq \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$, \AlgSep
+\> output $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$.
+\end{alg}
+We show the simulated transcript is distributed statistically close
+to an accepting transcript of a real protocol execution.
+In a real transcript we know that $c_1$ and $c_2$ are uniform in $\GG$. 
+Hence, observe that the simulated $c_1, c_2, \ell, \mathit{ch}$ are all distributed 
+exactly as in a real transcript.  It remains to show that the same holds
+for $\zv_\ell, \Zv_q$, and $\Rv$. 
+In an interaction with a real prover the quantities
+$r_\mathit{s1}, r_\mathit{s1w}, r_\mathit{sa}, r_\mathit{s2}$
+are chosen uniformly in $\range{N}$.
+Consider one such value $r \rgets \range{N}$.
+Because $N$ is much larger than $\abs{\GG} \cdot \ell$
+we know that the pair
+$\big(\lfloor r/\ell \rfloor \bmod \abs{\GG},\ (r \bmod \ell) \big)$
+is statistically close to uniform in $\range{\,\abs{\GG}\,} \times \range{\ell}$.
+Similarly,  in a real transcript
+each of $r_w, r_\mathit{w2}, r_\mathit{na}, r_\mathit{sa}$
+is chosen uniformly in $\range{2^{2 \lambda}}$ and therefore
+each of these four values modulo $\ell$
+is statistically close to uniform in $\range{\ell}$.
+It follows that $\zv_\ell$, which is masked by $(\rv \bmod \ell)$
+in a real transcript, is statistically close to uniform 
+in $\range{\ell}^8$, as in line~\eqref{ln:randvell} in the simulation.
+
+Next we argue that $\Zv_q \in \GG^4 \times \ZZ$ is simulated correctly.
+Observe that each of the first four components of $\Zv_q$ is a group
+element in $\GG$ that is randomized by
+$h^{\lfloor r_\mathit{s1} / \ell \rfloor},\
+ h^{\lfloor r_\mathit{s2} / \ell \rfloor},\
+ h^{\lfloor r_\mathit{s1w} / \ell \rfloor},\
+ h^{\lfloor r_\mathit{sa} / \ell \rfloor}$ respectively.
+Because these four exponents are close to uniform in $\range{\,\abs{\GG}\,}$ and are
+independent of everything else in the transcript, it follows that
+in a real transcript $Z_1, Z_2, Z_3, Z_4$ are independent and close to uniform elements in $\GG$.  This is also how these elements are chosen 
+on line~\eqref{ln:randZ} in the simulation.
+
+
+It remains to argue that $Z_5 \in \ZZ$ is simulated correctly. 
+In a real transcript this $Z_5$ is computed as 
+$Z_5 \deq \lfloor (\mathit{w2} \cdot \mathit{ch} + r_\text{w2})/\ell \rfloor -
+          \lfloor (\mathit{na} \cdot \mathit{ch} + r_\text{na})/\ell \rfloor$.
+Because $\mathit{w2} - \mathit{na} = t$, we have
+that $Z_5$ in a real transcript satisfies
+\[    Z_5 = \lfloor (t \cdot \mathit{ch})/\ell \rfloor + \lfloor r_\text{w2} / \ell \rfloor - \lfloor r_\text{na} / \ell \rfloor + \Delta \]
+where $\Delta \in \{0, \pm 1\}$. 
+In a real transcript $\lfloor r_\text{w2} / \ell \rfloor$ 
+and $\lfloor r_\text{na} / \ell \rfloor$ 
+are statistically close to fresh uniform values in $\range{2^{2\lambda}/\ell}$, 
+as in the simulated $Z_5$ on line~\eqref{ln:sim}.
+The only difference is that the real distribution is shifted by $\Delta$
+where as the simulated distribution is not.  
+However this $\Delta$ only negligibly affects the statistical distance
+between the real and simulated distributions. 
+The reason is that in both distributions, 
+every possible value in the range of $Z_5$, 
+except possibly at the edges, 
+is obtained from the same number of values 
+for the pair $(r_\text{w2}, r_\text{na})$. 
+%%  would be good to prove this as a general lemma.
+We thus conclude that the simulated $Z_5$ in~\eqref{ln:sim} 
+is statistically close to its real distribution.
+
+Finally, because the simulated $c_1, c_2, \ell, \mathit{ch}, \Zv_q, \zv_\ell$
+are all distributed statistically close to a real transcript, 
+it must be the case that the computed $\Rv$ 
+on line~\eqref{ln:computeR} is also distributed as in 
+a real transcript. 
+\end{proof}
+
+\iffalse
+An optimization: the transcript elements $Z_3, Z_4 \in \GG$ can be simulated
+in a similar fashion to how we simulated $Z_5$ in the proof above.
+That is, 
+$Z_3 = g^{\lfloor r_\text{w2} / \ell \rfloor} h^{\lfloor r_\text{s1w} / \ell \rfloor} / c_1^{\lfloor r_\text{w} / \ell \rfloor} \in \GG$
+and 
+$Z_4 = g^{\lfloor r_\text{na} / \ell \rfloor} h^{\lfloor r_\text{sa} / \ell \rfloor} / c^{\lfloor r_\text{a} / \ell \rfloor} \in \GG$,
+where 
+$r_\text{w}, r_\text{w2}, r_\text{a}, r_\text{na}, r_\text{s1w}, r_\text{sa}$
+are chosen uniformly in $\range{N}$. 
+It is not difficult to see that these $Z_3$ and $Z_4$ 
+are distributed as in a real transcript.
+This method of simulation can be used to make the protocol slightly more
+efficient because the randomizers 
+$r_\text{w}, r_\text{w2}, r_\text{a}, r_\text{na}, r_\text{s1w}, r_\text{sa} \in \ZZ$
+do not need to be uniform in the entire interval $\range{N}$.
+It suffices to choose these six values 
+uniformly in $\range{2^{2 \lambda}}$, which is a smaller interval
+than $\range{N}$.  Only $r_\text{s1}$ and $r_\text{s2}$ need to be chosen
+uniformly in the full interval $\range{N}$ so that $Z_1$ and $Z_2$ are uniform
+in $\GG$. 
+However, if the simulator chooses $c_1, c_2 \in \GG$ randomly in $\GG$
+so that it knows
+their $\ell$-th root, then even $Z_1$ and $Z_2$ can also be simulated as above.
+Then $r_\text{s1}$ and $r_\text{s2}$ can also be chosen uniformly
+in the range $\range{2^{2 \lambda}}$.
+In other words, the simulator works by first 
+choosing a random $\rv \gets \range{2^{2\lambda}}^8$,
+computing $\Rv \gets \phi(\rv)$, and then
+solving for $\Zv_q \in \GG^4 \times \ZZ$. 
+\fi
+
+\begin{definition}
+We say that algorithm $\mathcal{G}$ is an \defn{honest instance
+generator} for the relation $\mathcal{R}_{g,h}$ in~\eqref{eq:lang}
+if it chooses integers $n, s, t$, and outputs $(c, t)$ where
+$c \deq g^n h^s \in \GG$. 
+\end{definition}
+
+\begin{theorem}
+Protocol $\prot{P}$ is an argument of knowledge
+for the relation $\mathcal{R}_{g,h}$ in \eqref{eq:lang} 
+for instances $(c,t)$ generated by an honest instance
+generator $\mathcal{G}$,
+when the group $\GG$ is a modeled as a generic group of unknown order. 
+\end{theorem}
+
+\begin{proof}
+We construct an extractor that given an instance $(c,t)$ 
+generated by $\mathcal{G}$,
+interacts with a convincing prover and outputs a witness $(n, s, w, a)$ 
+for the relation $\mathcal{R}_{g,h}$ in~\eqref{eq:lang}. 
+The protocol transcript is $(c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$.
+The extractor rewinds the prover and obtains two
+accepting transcripts
+$\mathcal{T}_1 \deq (c_1, c_2, \Rv, \ell, \mathit{ch}, \Zv_q, \zv_\ell)$
+and 
+$\mathcal{T}_2 \deq (c_1, c_2, \Rv, \ell, \mathit{ch}', \Zv_q', \zv_\ell')$.
+Dividing the corresponding verification equations one by the other
+we obtain
+\[   (\Zv_q / \Zv_q')^\ell \cdot \phi(\zv_\ell - \zv_\ell') = 
+          T^{\mathit{ch} - \mathit{ch}'}. \]
+Let $\zv_\ell - \zv_\ell' = \Big(\Delta w,\ \Delta \mathit{w2},\ \Delta \mathit{s1},\ \Delta a,\ \Delta \mathit{na},\ \Delta \mathit{s1w},\ \Delta \mathit{sa},\ \Delta \mathit{s2} \Big) \in \ZZ^8$ and let $\Delta \mathit{ch} = \mathit{ch} - \mathit{ch}' \in \ZZ$.
+Then plugging this into the definition of $\phi$ we obtain
+\begin{equation} \label{eq:messy}
+      (\Zv_q / \Zv_q')^\ell \cdot
+      \left(\begin{array}{l}
+       g^{\Delta w} \cdot h^{\Delta \mathit{s1}},\ \ \ 
+       g^{\Delta a} \cdot h^{\Delta \mathit{s2}},\ \ \ 
+       g^{\Delta \mathit{w2}} \cdot h^{\Delta \mathit{s1w}} / c_1^{\Delta w}, \\
+       g^{\Delta \mathit{na}} \cdot h^{\Delta \mathit{sa}} / c^{\Delta a},\ \ \ 
+       \Delta \mathit{w2} - \Delta \mathit{na}\ 
+       \end{array} \right)
+          = \left(\begin{array}{l}c_1, \ c_2, \ 1, \\ 1,\ t \end{array}\right)^{\Delta \mathit{ch}}.
+\end{equation}
+Let $\Zv_q / \Zv_q' = (z_1, z_2, z_3, z_4, z_5)$ 
+where $z_1, z_2, z_3, z_4 \in \GG$ and $z_5 \in \ZZ$.  
+In a generic group $\GG$, the group elements $z_1, z_2, z_3, z_4$ 
+must satisfy $z_i = g^{\alpha_i} h^{\beta_i} c^{\gamma_i} \prod_{j=1}^q g_j^{\delta_{i,j}}$
+for $i=1,2,3,4$, 
+and $c_1 = g^{\alpha} h^{\beta} c^\gamma \prod_{j=1}^q g_j^{\delta_{j}}$,
+and $c_2 = g^{\alpha_0} h^{\beta_0} c^\gamma \prod_{j=1}^q g_j^{\delta_{0,j}}$,
+where the extractor knows all the listed integer exponents.
+Here $g_1,\ldots,g_q \in \GG$ are random group elements produced in response
+to a generic group oracle query for a random group element. 
+
+It now follows from~\eqref{eq:messy}, and from $c = g^n h^s$, 
+and by uniqueness of representation in generic groups (\Lemma{lem:unique}),
+that the following equations must hold over the integers:
+\begin{align*}
+  \ell \cdot (\alpha_1 + n \cdot \gamma_1) + \Delta w & = (\alpha + n \cdot \gamma) \cdot \Delta \mathit{ch},  &
+  \ell \cdot (\beta_1 + s \cdot \gamma_1) + \Delta \mathit{s1} & = (\beta + s \cdot \gamma) \cdot \Delta \mathit{ch}  
+\\
+  \ell \cdot (\alpha_2 + n \cdot \gamma_2) + \Delta a & = (\alpha_0 + n \cdot \gamma_0) \cdot \Delta \mathit{ch},  &
+  \ell \cdot (\beta_2 + s \cdot \gamma_2) + \Delta \mathit{s2} & = (\beta_0 + s \cdot \gamma_0) \cdot \Delta \mathit{ch}  
+\\
+  \ell \cdot (\alpha_3 + n \cdot \gamma_3) + \Delta \mathit{w2} & = (\alpha + n \cdot \gamma) \cdot \Delta w,  &
+  \ell \cdot (\beta_3 + s \cdot \gamma_3) + \Delta \mathit{s1w} & = (\beta + s \cdot \gamma) \cdot \Delta w   
+\\
+  \ell \cdot (\alpha_4 + n \cdot \gamma_4) + \Delta \mathit{na} & = n \cdot \Delta a,  & 
+  \ell \cdot (\beta_4 + s \cdot \gamma_4) + \Delta \mathit{sa} & = s \cdot \Delta a   
+\\
+  \ell \cdot z_4 + \Delta \mathit{w2} - \Delta \mathit{na} & = t \cdot \Delta \mathit{ch} 
+\end{align*}
+The extractor knows all these values except for $n$ and $s$.
+Reducing these equations modulo $\ell$ gives:
+\begin{align}
+  \Delta w & \equiv (\alpha + n \cdot \gamma) \cdot \Delta \mathit{ch}  &
+  \Delta \mathit{s1} & \equiv (\beta + s \cdot \gamma) \cdot \Delta \mathit{ch}  & \pmod{\ell} 
+\label{eq:first} \\
+  \Delta a & \equiv (\alpha_0 + n \cdot \gamma_0) \cdot \Delta \mathit{ch}  &
+  \Delta \mathit{s2} & \equiv (\beta_0 + s \cdot \gamma_0) \cdot \Delta \mathit{ch}  & \pmod{\ell} 
+\label{eq:firsta} \\
+  \Delta \mathit{w2} & \equiv (\alpha + n \cdot \gamma) \cdot \Delta w  &
+  \Delta \mathit{s1w} & \equiv (\beta + s \cdot \gamma) \cdot \Delta w   & \pmod{\ell} 
+\label{eq:second} \\
+  \Delta \mathit{na} & \equiv n \cdot \Delta a  & 
+  \Delta \mathit{sa} & \equiv s \cdot \Delta a   & \pmod{\ell} 
+\label{eq:third} \\
+  \Delta \mathit{w2} - \Delta \mathit{na} & \equiv t \cdot \Delta \mathit{ch} 
+      &&& \pmod{\ell} 
+\label{eq:fourth} 
+\end{align}
+
+Consider the left equalities in~\eqref{eq:first} and~\eqref{eq:firsta}.
+Define $w \deq \alpha + n \cdot \gamma \in \ZZ$ 
+and $a \deq \alpha_0 + n \cdot \gamma_0 \in \ZZ$.
+For any pair of accepting transcripts such as $(\mathcal{T}_1, \mathcal{T}_2)$,
+it must be the case that 
+$\Delta w \equiv w \cdot \Delta \mathit{ch} \pmod{\ell}$ and
+$\Delta a \equiv a \cdot \Delta \mathit{ch} \pmod{\ell}$. 
+The extractor knows $\Delta w,\ \Delta a$, and $\Delta \mathit{ch}$.
+Hence, by constructing a polynomial number of such accepting transcript pairs, 
+the extractor can recover $w, a \in \ZZ$ using the chinese remainder theorem. 
+
+Next, consider the left equation in~\eqref{eq:second}.
+Using $w = \alpha + n \cdot \gamma$ and
+$\Delta w \equiv w \cdot \Delta \mathit{ch} \pmod{\ell}$ gives
+$\Delta \mathit{w2} \equiv w^2 \cdot \Delta \mathit{ch} \pmod{\ell}$.
+
+Using $\Delta \mathit{w2} \equiv w^2 \cdot \Delta \mathit{ch} \pmod{\ell}$
+in~\eqref{eq:fourth}
+gives $\Delta \mathit{na} \equiv (w^2 - t) \cdot \Delta \mathit{ch} \pmod{\ell}$. 
+Finally, the left equality in~\eqref{eq:third} 
+gives $(w^2 - t)\cdot \Delta \mathit{ch} \equiv n \cdot \Delta a \pmod{\ell}$.
+Using $\Delta a \equiv a \cdot \Delta \mathit{ch} \pmod{\ell}$
+we obtain that the extracted integers $w$ and $a$ must satisfy
+$(w^2 - t)\cdot \Delta \mathit{ch} \equiv 
+      n \cdot a \cdot \Delta \mathit{ch} \pmod{\ell}$.  
+Since $\ell$ does not divide $\Delta \mathit{ch}$ with overwhelming
+probability, we obtain that $w^2 - t \equiv n \cdot a \pmod{\ell}$.
+Since this equality holds modulo a random $\ell \in \primes$ 
+with overwhelming probability, 
+the equality $w^2 - t = n \cdot a$ must hold over the integers,
+as required.   Note that this implies that $a \neq 0$. 
+
+Because $a \neq 0$, the extractor can obtain $(n \bmod \ell)$
+from the left equality in~\eqref{eq:third}, and thus extract $n \in \ZZ$ by
+repeating this procedure over several $\ell$ and then using the chinese
+remainder theorem.  
+Similarly, it can extract $s \in \ZZ$ from
+the right equality in~\eqref{eq:third}.   
+It thus obtains a witness $(n, s, w, a)$ 
+for the relation $\mathcal{R}_{g,h}$ in~\eqref{eq:lang}, as required.
+\end{proof}
+
+
+
+
+\subsection{The concrete airdrop system}\label{sec:rsa:airdrop}
+
+The airdrop system is obtained by applying the Fiat-Shamir
+heuristic to the protocol from the previous section. 
+The concrete private airdrop system works as follows:
+
+\paragraph{Algorithm $\text{sendTokens}(\PK)$:}
+To send tokens to an RSA public key $\PK = (n, e)$ do:
+\begin{itemize}
+\item 
+generate a random $s \rgets \range{G}$.
+
+\item 
+output $(c, s)$ where $c \gets g^n \cdot h^s \in \GG$.
+\end{itemize}
+
+\medskip\noindent 
+The following two notes can help optimize the scheme:
+\begin{itemize}
+\item[$-$] $s$ is privately sent to the owner of $\PK$, for example
+by encrypting $s$ under $\PK$ to obtain a ciphertext $c'$ and
+publishing this $c'$ somewhere, not necessarily on the blockchain.  There is
+a public association between $c'$ and $\PK$ (e.g., via a hash table),
+so that the owner of $\PK$ can easily find $c'$.  One can include
+$H(c)$ in the plaintext encrypted in $c'$ to help the owner of $\PK$
+quickly find $c$.  
+
+\item[$-$] One can generate $s$ 
+as $s \gets H(s')$ where $s'$ is a random 256-bit value and $H$ is a hash
+function $H:\{0,1\}^{256} \to \range{G}$.  The ciphertext $c'$ is
+an encryption of $s'$, instead of $s$, which can shrink~$c'$.
+\end{itemize}
+
+
+\paragraph{Algorithm $\text{sign}(\SK, (c, s), m)$:}  
+To withdraw the funds associated with the token $c$ the user
+signs a withdrawal message $m$ using the RSA secret key $\SK = (n,p,q)$ 
+as follows:
+\begin{itemize}
+\item find a prime $2 \leq t \leq \lambda$  such that $t$ is a quadratic 
+residue in $\ZZ_n$. 
+
+\item find integers $(w,a)$ such that $w^2 = t + a n$ in $\ZZ$
+           (i.e. $w$ is a square root of $t$ modulo $n$)
+
+\item choose a random $s_1 \rgets \range{N}$ and compute
+           $c_1 \gets g^w \cdot h^{s_1} \in \GG$.
+
+\item choose a random $s_2 \rgets \range{N}$ and compute
+           $c_2 \gets g^a \cdot h^{s_2} \in \GG$.
+
+\item choose a random $\rv \rgets \range{2^{2\lambda}}^8$
+and compute $\Rv \gets \phi(\rv) \in \GG^4 \times \ZZ$,
+where $\phi$ is the homomorphism defined in~\eqref{eq:hom}. 
+
+\item compute $\mathit{seed} \gets \text{Hash}(m, \GG, g, h, c, c_1, c_2, t, \Rv$).
+
+\item
+use a $\text{PRNG}(\mathit{seed})$ to generate $(\mathit{ch}, \ell)$, 
+where $\mathit{ch} \in \range{2^\lambda}$ and $\ell \in \primes$.
+
+\item compute:
+\[  \zv \gets (\mathit{ch} \cdot \vv + \rv) \in \ZZ^8, \quad
+    \zv_\ell \gets (\zv \bmod \ell) \in \range{\ell}^8, \quad
+    \zv_q \gets \lfloor \zv / \ell \rfloor \in \ZZ^8, \quad
+    \Zv_q \gets \phi(\zv_q) \in \GG^4 \times \ZZ.
+\]
+
+\item output the signature 
+$\mathit{sig} = (c_1, c_2, t, \mathit{ch}, \ell, \Zv_q, \zv_\ell)$.
+\end{itemize}
+
+
+
+\paragraph{Algorithm $\text{verify}(c, m, \mathit{sig}):$}
+Verify that $\mathit{sig} = (c_1, c_2, t, \mathit{ch}, \ell, \Zv_q, \zv_\ell)$ 
+is a valid signature for token~$c$ on the message~$m$.
+\begin{itemize}
+\item reject if $t \notin \range{\lambda}$ or $t$ is not a prime.
+
+\item with $T \deq (c_1, c_2, 1, 1, t) \in \GG^4 \times \ZZ$, 
+compute $\Rv' \gets \Zv_q^\ell \cdot \phi(\zv_\ell) / T^\mathit{ch} \in \GG^4 \times \ZZ$.
+
+\item compute $\mathit{seed}' \gets \text{Hash}(m, \GG, g, h, c, c_1, c_2, t, \Rv'$)
+
+\item use a $\text{PRNG}(\mathit{seed}')$ to generate 
+  $\mathit{ch}' \in \range{2^\lambda}$ and $\ell' \in \primes$. \\
+Since $\ell$ is
+  included in the signature, the verifier does not need to search for
+  a prime, but can instead verify that the given $\ell$ is prime and
+  is not too far from the base starting point of the prime search.
+
+\item accept iff $\mathit{ch}' = \mathit{ch}$ and $\ell' = \ell$.
+\end{itemize}
+
+
+
+\paragraph{Proof of security.}
+We need to prove two things: 
+(1) privacy in the random oracle model:
+there is a simulator that can generate a properly distributed
+signature just given $c$ and $m$, and 
+(2) security: an attacker that is given $c$ along with a 
+signature on some message $m$
+with respect to $c$ and can generate a valid signature for $c$ on
+some message $m' \neq m$ can be used to compute $\sqrt{t} \in \ZZ_n$
+for some $2 \leq t \leq 1000$. 
+
+\paragraph{Proof of privacy.}
+TODO: Use the ZK proof of the interactive protocol. Easy corollary.
+
+
+\paragraph{Proof of security.}
+TODO: Use the extractor of the interactive protocol. Easy corollary.
+ 
