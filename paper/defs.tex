@@ -37,7 +37,7 @@ Any \emph{verifier} \Vr can check the signature on the transaction
 
 \medskip\noindent\textit{Anonymity} means, roughly speaking, that $c$ and $\sig$ reveal
     nothing about $\PK$.
-Specifically, consider $\mathsf{Anonym}$, a game between a PPT adversary $\adv$
+Specifically, consider $\mathsf{Anon}$, a game between a PPT adversary $\adv$
     and a challenger $\chall$:
 %
 \begin{itemize}
@@ -54,13 +54,13 @@ and sends $(c, \sig)$ to $\adv$.
 
 \end{itemize}
 %
-$\adv$ wins $\mathsf{Anonym}$ if $b' = b$.
+$\adv$ wins $\mathsf{Anon}$ if $b' = b$.
 
 \begin{definition}
-Let an adversary $\adv$'s advantage in $\mathsf{Anonym}$ be
-$\mathrm{Adv}_{\adv}^{\mathsf{Anonym}} = \sizeof{\probab{\adv~\text{wins}} - \nicefrac{1}{2}}$.
+Let an adversary $\adv$'s advantage in $\mathsf{Anon}$ be
+$\mathrm{Adv}_{\adv}^{\mathsf{Anon}} = \sizeof{\probab{\adv~\text{wins}} - \nicefrac{1}{2}}$.
 Then an airdrop scheme is \emph{anonymous} if, for any PPT adversary
-    $\adv$, $\mathrm{Adv}_{\adv}^{\mathsf{Anonym}} \le \text{negl}$.
+    $\adv$, $\mathrm{Adv}_{\adv}^{\mathsf{Anon}} \le \text{negl}$.
 \end{definition}
 
 
@@ -68,7 +68,7 @@ Then an airdrop scheme is \emph{anonymous} if, for any PPT adversary
     a party that does not know $\SK$ cannot generate a valid signature
     for any message, even if it knows a valid signature for any other
     message.
-Specifically, consider $\mathsf{Unforg}$, a game between a PPT adversary
+Specifically, consider $\mathsf{Forge}$, a game between a PPT adversary
     $\adv$ and a challenger $\chall$:
 %
 \begin{itemize}
@@ -82,12 +82,12 @@ Specifically, consider $\mathsf{Unforg}$, a game between a PPT adversary
 
 \end{itemize}
 %
-$\adv$ wins $\mathsf{Unforg}$ if $\msg' \neq \msg \wedge \text{verify}(c, \msg', \sig') = \text{yes}$.
+$\adv$ wins $\mathsf{Forge}$ if $\msg' \neq \msg \wedge \text{verify}(c, \msg', \sig') = \text{yes}$.
 
 \begin{definition}
-Let an adversary $\adv$'s advantage in $\mathsf{Unforg}$ be
-$\mathrm{Adv}_{\adv}^{\mathsf{Unforg}} = \probab{\adv~\text{wins}}$.
+Let an adversary $\adv$'s advantage in $\mathsf{Forge}$ be
+$\mathrm{Adv}_{\adv}^{\mathsf{Forge}} = \probab{\adv~\text{wins}}$.
 Then an airdop is \emph{unforgeable} if, for any PPT adversary $\adv$,
-$\mathrm{Adv}_{\adv}^{\mathsf{Unforg}} \le \text{negl}$.
+$\mathrm{Adv}_{\adv}^{\mathsf{Forge}} \le \text{negl}$.
 \end{definition}
 
