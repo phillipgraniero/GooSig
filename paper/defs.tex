@@ -91,36 +91,3 @@ Then an airdop is \emph{unforgeable} if, for any PPT adversary $\adv$,
 $\mathrm{Adv}_{\adv}^{\mathsf{Unforg}} \le \text{negl}$.
 \end{definition}
 
-
-\subsection{Zero-knowledge proofs in generic groups}
-
-TODO: Need overview of zero-knowledge in generic groups. 
-
-\paragraph{The representation extraction lemma.}
-Let $\adv$ be an algorithm that outputs 
-a generic group element $u \in \GG$.
-The following lemma shows that there is an extractor that
-can extract from $\adv$ an integer representation of $u$
-relative to a supplied set of group generators.
-Moreover, this integer representation is unique.
-
-\begin{lemma}[Unique representation extraction in generic groups]
-\label{lem:unique}
-Let $\adv_1, \adv_2$ be two randomized algorithms that interact
-with group oracles for a generic group $\GG$ of unknown order.
-For $i=1,2$, algorithm $\adv_i$ outputs $u_i \in \GG$.
-Suppose that each algorithm makes at most $q$ type-1 queries
-and let $g_1,\ldots,g_q \in \GG$ be the returned random group elements. 
-
-There is an extractor $\bdv$ that emulates 
-the generic group oracles for $\adv_1$ and $\adv_2$
-such that for $i=1,2$ when $\bdv$ interacts with $\adv_i$ 
-the following holds with overwhelming probability:
-if $\adv_i$ outputs $u_i \in \GG$ 
-then the extractor $\bdv_i$ outputs a representation
-$\alpha_{i,1},\ldots,\alpha_{i,q} \in \ZZ$
-such that $u_i = g_1^{\alpha_{i,1}} \cdots g_q^{\alpha_{i,q}}$.
-Moreover, if $u_1 = u_2$ then the two representations are the same,
-namely $\alpha_{1,j} = \alpha_{2,j}$ for $j=1,\ldots,q$. 
-\end{lemma}
-
